@@ -1,0 +1,2726 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Phong Cách Aman — Kiến Trúc Tĩnh Lặng (Chi Tiết)</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=Inter:wght@300;400;500&family=Space+Mono:wght@400;700&display=swap');
+
+  :root {
+    --bg: #f5f0e8;
+    --surface: #ffffff;
+    --surface2: #ede8df;
+    --surface3: #e5dfd4;
+    --border: #d8d0c4;
+    --border2: #c8bfb0;
+    --text: #1e1a14;
+    --text-muted: #6a5e50;
+    --text-dim: #9a9080;
+    --amber: #9a6f0a;
+    --amber-mid: #b8922a;
+    --amber-light: #d4b050;
+    --amber-glow: rgba(154,111,10,0.07);
+    --amber-glow2: rgba(154,111,10,0.12);
+    --warm: #7a5530;
+    --accent: #5a4020;
+    --tokyo-c: #5a7a6a;
+    --kyoto-c: #9a7060;
+    --newyork-c: #7a6a58;
+    --metropole-c: #9a6a20;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Inter', sans-serif;
+    font-weight: 300;
+    overflow: hidden;
+    height: 100vh;
+    width: 100vw;
+  }
+
+  #deck {
+    width: 100vw;
+    height: 100vh;
+    position: relative;
+  }
+
+  .slide {
+    position: absolute;
+    inset: 0;
+    display: none;
+    flex-direction: column;
+    padding: 44px 60px;
+    background: var(--bg);
+    opacity: 0;
+    transition: opacity 0.5s ease;
+    overflow-y: auto;
+  }
+  .slide.active { display: flex; opacity: 1; }
+
+  h1 {
+    font-family: 'Cormorant Garamond', serif;
+    font-weight: 400;
+    font-size: clamp(38px, 4vw, 58px);
+    letter-spacing: 0.01em;
+    line-height: 1.1;
+    color: var(--text);
+  }
+  h2 {
+    font-family: 'Cormorant Garamond', serif;
+    font-weight: 400;
+    font-size: clamp(28px, 2.6vw, 40px);
+    letter-spacing: 0.02em;
+    color: var(--text);
+    margin-bottom: 24px;
+  }
+  h3 {
+    font-family: 'Space Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: var(--amber);
+    margin-bottom: 12px;
+  }
+  h4 {
+    font-family: 'Cormorant Garamond', serif;
+    font-weight: 500;
+    font-size: 18px;
+    color: var(--accent);
+    margin-bottom: 6px;
+  }
+  h5 {
+    font-family: 'Space Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--amber);
+    margin-bottom: 8px;
+  }
+  p { font-size: 13px; line-height: 1.7; color: var(--text-muted); }
+  .label {
+    font-family: 'Space Mono', monospace;
+    font-size: 8px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+  }
+
+  .rule { width: 32px; height: 1.5px; background: var(--amber); margin: 16px 0; opacity: 0.6; }
+  .rule-long { width: 100%; height: 1px; background: var(--border); margin: 20px 0; }
+
+  /* NAV */
+  #nav {
+    position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+    display: flex; align-items: center; gap: 12px; z-index: 100;
+  }
+  .dot {
+    width: 5px; height: 5px; border-radius: 50%;
+    background: var(--text-dim); cursor: pointer; transition: all 0.3s;
+  }
+  .dot.active { background: var(--amber); width: 20px; border-radius: 2px; }
+  #slide-counter {
+    position: fixed; bottom: 24px; right: 32px;
+    font-family: 'Space Mono', monospace; font-size: 9px;
+    letter-spacing: 0.15em; color: var(--text-dim); z-index: 100;
+  }
+  #progress { position: fixed; top: 0; left: 0; height: 2px; background: var(--amber); z-index: 100; transition: width 0.4s ease; }
+  #key-hint {
+    position: fixed; bottom: 24px; left: 32px;
+    font-family: 'Space Mono', monospace; font-size: 8px;
+    letter-spacing: 0.12em; color: var(--text-dim); z-index: 100;
+  }
+  .key { color: var(--amber); }
+
+  /* ── COVER ── */
+  .slide-cover {
+    justify-content: center; align-items: flex-start;
+    background: var(--surface); position: relative; overflow: hidden;
+  }
+  .slide-cover::before {
+    content: ''; position: absolute; right: -60px; top: -60px;
+    width: 520px; height: 520px;
+    background: radial-gradient(circle, rgba(154,111,10,0.05) 0%, transparent 70%);
+  }
+  .slide-cover::after {
+    content: ''; position: absolute; left: 0; bottom: 0; right: 0; height: 3px;
+    background: linear-gradient(90deg, transparent, var(--amber), transparent); opacity: 0.5;
+  }
+  .cover-subtitle {
+    font-family: 'Space Mono', monospace; font-size: 9px;
+    letter-spacing: 0.4em; text-transform: uppercase; color: var(--amber); margin-bottom: 16px;
+  }
+  .cover-body { max-width: 480px; margin-top: 16px; font-size: 14px; line-height: 1.8; color: var(--text-muted); }
+  .cover-mark {
+    position: absolute; right: 60px; top: 50%; transform: translateY(-50%);
+    font-family: 'Cormorant Garamond', serif; font-size: 340px; font-weight: 300;
+    color: rgba(154,111,10,0.04); line-height: 1; user-select: none;
+  }
+  .cover-stats {
+    display: flex; gap: 28px; margin-top: 28px;
+  }
+  .cover-stat {
+    display: flex; flex-direction: column; gap: 4px;
+    padding: 12px 16px; border: 1px solid var(--border); background: var(--bg);
+    border-radius: 2px;
+  }
+  .cover-stat-num {
+    font-family: 'Cormorant Garamond', serif; font-size: 28px; font-weight: 400; color: var(--amber);
+  }
+  .cover-stat-label { font-family: 'Space Mono', monospace; font-size: 8px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--text-dim); }
+
+  /* ── TABLE ── */
+  .table-wrapper { overflow: auto; border: 1px solid var(--border); border-radius: 3px; }
+  table {
+    width: 100%; border-collapse: collapse; font-size: 12px;
+    background: var(--surface);
+  }
+  thead { background: var(--surface2); }
+  th {
+    padding: 10px 12px; text-align: left;
+    font-family: 'Space Mono', monospace; font-size: 8px;
+    letter-spacing: 0.15em; text-transform: uppercase;
+    color: var(--amber); font-weight: 400;
+    border-bottom: 1px solid var(--border);
+    white-space: nowrap;
+  }
+  td {
+    padding: 9px 12px; color: var(--text-muted); vertical-align: top;
+    border-bottom: 1px solid var(--surface3);
+    line-height: 1.5;
+  }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: var(--amber-glow); }
+  .td-label { font-weight: 400; color: var(--text); white-space: nowrap; }
+  .td-num { font-family: 'Space Mono', monospace; font-size: 10px; color: var(--amber); white-space: nowrap; }
+  .badge {
+    display: inline-block; padding: 2px 7px; border-radius: 2px;
+    font-size: 9px; font-family: 'Space Mono', monospace;
+    letter-spacing: 0.05em; white-space: nowrap;
+  }
+  .badge-amber { background: var(--amber-glow2); color: var(--amber); border: 1px solid var(--amber-light); }
+  .badge-warm { background: rgba(122,90,48,0.1); color: var(--warm); border: 1px solid var(--warm); }
+
+  /* ── GRID LAYOUTS ── */
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 32px; flex: 1; align-items: start; }
+  .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; flex: 1; align-items: start; }
+  .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; flex: 1; align-items: start; }
+  .grid-2-1 { display: grid; grid-template-columns: 2fr 1fr; gap: 28px; flex: 1; align-items: start; }
+  .grid-1-2 { display: grid; grid-template-columns: 1fr 2fr; gap: 28px; flex: 1; align-items: start; }
+
+  /* ── CARD ── */
+  .card {
+    padding: 18px; border: 1px solid var(--border); background: var(--surface);
+    border-radius: 3px; transition: border-color 0.3s, box-shadow 0.3s;
+  }
+  .card:hover { border-color: var(--amber-mid); box-shadow: 0 4px 20px var(--amber-glow); }
+  .card-num {
+    font-family: 'Space Mono', monospace; font-size: 8px;
+    color: var(--amber); letter-spacing: 0.2em; margin-bottom: 8px;
+  }
+  .card ul { list-style: none; display: flex; flex-direction: column; gap: 6px; }
+  .card ul li { font-size: 11px; padding-left: 12px; position: relative; }
+  .card ul li::before { content: '·'; position: absolute; left: 0; color: var(--amber); font-size: 14px; line-height: 1.4; }
+
+  /* ── CONCEPT BOX ── */
+  .concept-box {
+    display: flex; gap: 12px; padding: 12px; border: 1px solid var(--border);
+    background: var(--surface); border-radius: 3px; margin-bottom: 10px;
+    align-items: flex-start;
+  }
+  .concept-icon {
+    width: 28px; height: 28px; flex-shrink: 0; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px; border: 1px solid;
+  }
+  .concept-text { flex: 1; }
+  .concept-term { font-size: 12px; font-weight: 500; color: var(--text); margin-bottom: 2px; }
+  .concept-def { font-size: 11px; color: var(--text-muted); line-height: 1.5; }
+
+  /* ── SVG ILLUSTRATIONS ── */
+  .svg-container { display: flex; align-items: center; justify-content: center; }
+
+  /* ── ROOM SLIDES ── */
+  .room-slide { padding: 0; overflow-y: auto; }
+  .room-header {
+    padding: 36px 56px 28px; border-bottom: 1px solid var(--border);
+    display: flex; justify-content: space-between; align-items: flex-start;
+    background: var(--surface); flex-shrink: 0;
+  }
+  .room-vibe-tag {
+    font-family: 'Space Mono', monospace; font-size: 8px;
+    letter-spacing: 0.2em; text-transform: uppercase; color: var(--amber);
+    border: 1px solid var(--amber-mid); padding: 5px 12px;
+    border-radius: 2px; margin-top: 8px; background: var(--amber-glow);
+  }
+  .room-tagline {
+    font-family: 'Cormorant Garamond', serif; font-style: italic;
+    font-size: 13px; color: var(--amber); margin-top: 4px;
+  }
+  .room-body { display: grid; grid-template-columns: 1fr 1fr 1fr; flex: 1; padding: 28px 56px; gap: 28px; overflow-y: auto; }
+  .room-col { display: flex; flex-direction: column; gap: 14px; }
+
+  /* SVG floor plans */
+  .floor-svg-wrap { background: var(--surface); border: 1px solid var(--border); border-radius: 3px; padding: 14px; }
+  .floor-svg-label { font-family: 'Space Mono', monospace; font-size: 8px; letter-spacing: 0.15em; text-transform: uppercase; color: var(--text-dim); margin-bottom: 10px; }
+
+  /* Spec rows */
+  .spec-row { display: flex; gap: 10px; align-items: flex-start; }
+  .spec-icon {
+    width: 26px; height: 26px; flex-shrink: 0; border: 1px solid var(--amber-mid);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 9px; color: var(--amber); font-family: 'Space Mono', monospace;
+    border-radius: 2px; background: var(--amber-glow);
+  }
+  .spec-title { font-size: 13px; font-weight: 400; color: var(--text); margin-bottom: 3px; }
+  .spec-desc { font-size: 11px; color: var(--text-muted); line-height: 1.55; }
+
+  /* Material chips */
+  .mat-chip {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-size: 10px; padding: 4px 10px;
+    border: 1px solid var(--border); background: var(--surface);
+    border-radius: 2px; color: var(--text-muted);
+    font-family: 'Space Mono', monospace;
+  }
+  .mat-dot-sm { width: 8px; height: 8px; border-radius: 1px; flex-shrink: 0; }
+  .light-row { display: flex; align-items: center; gap: 7px; margin-bottom: 5px; }
+  .light-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+  .light-warm { background: #d4a030; }
+  .light-cool { background: #7aafd0; }
+  .light-neutral { background: #c0bcb0; }
+  .light-desc { font-size: 10px; color: var(--text-muted); font-family: 'Space Mono', monospace; }
+
+  .amenity-chips { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 8px; }
+  .amenity-chip {
+    font-size: 9px; color: var(--text-muted); padding: 4px 8px;
+    border: 1px solid var(--border); background: var(--surface);
+    text-align: center; font-family: 'Space Mono', monospace;
+    letter-spacing: 0.03em; border-radius: 2px;
+  }
+
+  .room-divider { height: 1px; background: var(--border); margin: 8px 0; }
+
+  /* ── CLOSING ── */
+  .slide-closing { justify-content: center; align-items: center; text-align: center; background: var(--surface); position: relative; }
+  .closing-ring {
+    position: absolute; width: 360px; height: 360px;
+    border: 1px solid var(--border); border-radius: 50%;
+    top: 50%; left: 50%; transform: translate(-50%, -50%); opacity: 0.4;
+  }
+  .closing-ring:nth-child(2) { width: 460px; height: 460px; opacity: 0.2; }
+  .closing-ring:nth-child(3) { width: 560px; height: 560px; opacity: 0.1; }
+  .closing-quote {
+    font-family: 'Cormorant Garamond', serif; font-style: italic;
+    font-size: clamp(24px, 2.6vw, 38px); font-weight: 300;
+    color: var(--text); max-width: 600px; line-height: 1.45;
+    position: relative; z-index: 2;
+  }
+  .closing-source {
+    margin-top: 24px; font-family: 'Space Mono', monospace;
+    font-size: 9px; letter-spacing: 0.25em; text-transform: uppercase;
+    color: var(--amber); position: relative; z-index: 2;
+  }
+
+  /* Section headers in tables */
+  .section-header { background: var(--surface2); }
+  .section-header td {
+    font-family: 'Space Mono', monospace; font-size: 8px;
+    letter-spacing: 0.2em; text-transform: uppercase; color: var(--amber);
+    font-weight: 400; padding: 8px 12px;
+  }
+
+  .col-header {
+    background: var(--amber-glow2);
+    font-weight: 500;
+  }
+  .tokyo-col { background: rgba(90,122,106,0.05); }
+  .kyoto-col { background: rgba(154,112,96,0.05); }
+  .newyork-col { background: rgba(122,106,88,0.05); }
+  .metropole-col { background: rgba(154,106,32,0.05); }
+
+  .room-tokyo .room-vibe-tag { border-color: var(--tokyo-c); color: var(--tokyo-c); background: rgba(90,122,106,0.08); }
+  .room-kyoto .room-vibe-tag { border-color: var(--kyoto-c); color: var(--kyoto-c); background: rgba(154,112,96,0.08); }
+  .room-newyork .room-vibe-tag { border-color: var(--newyork-c); color: var(--newyork-c); background: rgba(122,106,88,0.08); }
+  .room-metropole .room-vibe-tag { border-color: var(--metropole-c); color: var(--metropole-c); background: rgba(154,106,32,0.08); }
+
+  .mood-chips { display: flex; flex-wrap: wrap; gap: 4px; }
+  .mood-chip {
+    font-size: 10px; padding: 3px 9px; border-radius: 12px;
+    border: 1px solid; color: var(--text-muted);
+    font-family: 'Space Mono', monospace;
+  }
+</style>
+</head>
+<body>
+
+<div id="progress"></div>
+
+<div id="deck">
+
+  <!-- ═══════════════════════════════════════════ -->
+  <!-- SLIDE 01 — BÌA                               -->
+  <!-- ═══════════════════════════════════════════ -->
+  <div class="slide slide-cover active" data-num="01">
+    <div class="cover-subtitle">Hệ thống Thiết kế Aman</div>
+    <h1>Kiến trúc<br>của Sự<br>Tĩnh Lặng</h1>
+    <div class="rule"></div>
+    <p class="cover-body">
+      Chuyên sâu về triết lý, bảng vật liệu, khái niệm kỹ thuật và DNA không gian — những yếu tố làm nên thương hiệu khách sạn xa xỉ bí ẩn và đáng mơ ước nhất thế giới.
+    </p>
+    <div class="cover-stats">
+      <div class="cover-stat">
+        <span class="cover-stat-num">1988</span>
+        <span class="cover-stat-label">Năm thành lập</span>
+      </div>
+      <div class="cover-stat">
+        <span class="cover-stat-num">4</span>
+        <span class="cover-stat-label">Loại phòng</span>
+      </div>
+      <div class="cover-stat">
+        <span class="cover-stat-num">40–30–20–10</span>
+        <span class="cover-stat-label">Công thức vật liệu</span>
+      </div>
+      <div class="cover-stat">
+        <span class="cover-stat-num">3</span>
+        <span class="cover-stat-label">Trụ cột thiết kế</span>
+      </div>
+    </div>
+    <div class="cover-mark">A</div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════ -->
+  <!-- SLIDE 02 — TRIẾT LÝ & DNA                   -->
+  <!-- ═══════════════════════════════════════════ -->
+  <div class="slide" data-num="02">
+    <h3>Triết lý · Brand DNA</h3>
+    <h2>Aman là gì?</h2>
+    <div class="rule-long"></div>
+    <div class="grid-2">
+      <div>
+        <p style="font-size: 15px; line-height: 1.9; color: var(--text); font-family: 'Cormorant Garamond', serif; font-weight: 400; margin-bottom: 12px;">
+          "Aman" nghĩa là <em style="color: var(--amber);">bình yên</em> trong tiếng Sanskrit.
+        </p>
+        <p style="margin-bottom: 12px;">Giới tinh hoa thế giới — hoàng gia, tỷ phú công nghệ, những người tìm kiếm tâm linh — chọn Aman không phải để được nhìn thấy, mà để được <strong style="color: var(--text);">tan biến</strong>.</p>
+        <p style="margin-bottom: 12px;">Không marketing hoành tráng. Không tiệc khai trương. Không người nổi tiếng đại diện.</p>
+        <p>Một cảm giác <strong style="color: var(--text);">thì thầm</strong> thay vì la hét.</p>
+
+        <div class="card" style="margin-top: 20px;">
+          <h5>Khẩu hiệu then chốt</h5>
+          <ul style="margin-top: 8px;">
+            <li>"You go to return to yourself"</li>
+            <li>"Whispers rather than shouts"</li>
+            <li>"Not about showing off — about letting go"</li>
+            <li>"Architecture of restraint"</li>
+          </ul>
+        </div>
+      </div>
+      <div>
+        <h4>4 Trụ cột thương hiệu</h4>
+        <div style="display: flex; flex-direction: column; gap: 10px; margin-top: 12px;">
+          <div class="concept-box">
+            <div class="concept-icon" style="background: var(--amber-glow); border-color: var(--amber-mid); color: var(--amber);">01</div>
+            <div class="concept-text">
+              <div class="concept-term">Kiến trúc của Sự Kìm Chế</div>
+              <div class="concept-def">Không áp đặt. Hòa mình vào thiên nhiên. Nhạy cảm với từng địa điểm (site-sensitive). Vật liệu bản địa. Tầm nhìn thiêng liêng.</div>
+            </div>
+          </div>
+          <div class="concept-box">
+            <div class="concept-icon" style="background: var(--amber-glow); border-color: var(--amber-mid); color: var(--amber);">02</div>
+            <div class="concept-text">
+              <div class="concept-term">Lòng hiếu khách Vô hình</div>
+              <div class="concept-def">Không đồng phục. Không nụ cười kịch bản. Nhân viên nhớ bạn một cách tự nhiên, trực giác. "Just soul."</div>
+            </div>
+          </div>
+          <div class="concept-box">
+            <div class="concept-icon" style="background: var(--amber-glow); border-color: var(--amber-mid); color: var(--amber);">03</div>
+            <div class="concept-text">
+              <div class="concept-term">Buông Bỏ (Letting Go)</div>
+              <div class="concept-def">Không logo ở cửa. Không ga trải giường thương hiệu. Không phô trương. Mục tiêu là sự buông bỏ — không phải khoe khoang.</div>
+            </div>
+          </div>
+          <div class="concept-box">
+            <div class="concept-icon" style="background: var(--amber-glow); border-color: var(--amber-mid); color: var(--amber);">04</div>
+            <div class="concept-text">
+              <div class="concept-term">Gốc rễ Văn hóa</div>
+              <div class="concept-def">Mỗi Aman đắm sâu trong văn hóa địa phương. Bhutan như tu viện Phật giáo. Nhật Bản như bài thơ Zen. Rajasthan như cung điện Mughal.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════ -->
+  <!-- SLIDE 03 — 3 TRỤ CỘT THIẾT KẾ               -->
+  <!-- ═══════════════════════════════════════════ -->
+  <div class="slide" data-num="03">
+    <h3>Khung thiết kế · Reverse-engineering</h3>
+    <h2>Hệ thống "3 Trụ Cột"</h2>
+    <div class="rule-long"></div>
+    <div class="grid-3">
+      <div class="card">
+        <div class="card-num">TRỤ CỘT 01</div>
+        <h4>Structure (Cấu trúc)</h4>
+        <div class="rule"></div>
+        <h5>Phân tích thiết kế cốt lõi</h5>
+        <ul>
+          <li>Bố cục: đối xứng / rule of thirds / khoảng trống</li>
+          <li>Ánh sáng: nguồn, hướng, chất lượng, nhiệt độ màu (K)</li>
+          <li>Chất liệu: honed / polished / brushed / matte</li>
+          <li>Tầm nhìn: khung hình kiến trúc, đường dẫn hướng (leading lines)</li>
+          <li>Tỷ lệ: người trong không gian, scale comparison</li>
+        </ul>
+      </div>
+      <div class="card">
+        <div class="card-num">TRỤ CỘT 02</div>
+        <h4>Reference (Tham chiếu)</h4>
+        <div class="rule"></div>
+        <h5>Mốc phong cách</h5>
+        <ul>
+          <li>Aman Tokyo / Aman New York</li>
+          <li>Tadao Ando — calm minimalism</li>
+          <li>Kerry Hill Architects — precision & silence</li>
+        </ul>
+        <div class="room-divider"></div>
+        <h5>Vật liệu tham chiếu</h5>
+        <ul>
+          <li>Washi paper, Hinoki wood, Shoji screens</li>
+          <li>Rammed earth, travertine, basalt</li>
+          <li>Brushed bronze patina, aged brass</li>
+          <li>Dark walnut, honed limestone</li>
+          <li>Rattan weaving, Tatami, Tadelakt plaster</li>
+        </ul>
+      </div>
+      <div class="card">
+        <div class="card-num">TRỤ CỘT 03</div>
+        <h4>Vision (Tầm nhìn)</h4>
+        <div class="rule"></div>
+        <h5>Mood</h5>
+        <ul>
+          <li>tranquil · opulent · mysterious</li>
+          <li>serene · dramatic · hushed · refined</li>
+          <li>quiet luxury · understated opulence</li>
+          <li>architecture of restraint · meditative</li>
+        </ul>
+        <div class="room-divider"></div>
+        <h5>Narrative & Sensory</h5>
+        <ul>
+          <li>Private sanctuary / arrival journey</li>
+          <li>Tactile warmth / coolness</li>
+          <li>Pristine vs. lived-in patina</li>
+          <li>Sound silence / visual silence</li>
+          <li>Curated serenity · More → Better</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════ -->
+  <!-- SLIDE 04 — BẢNG SO SÁNH 4 PHÒNG            -->
+  <!-- ═══════════════════════════════════════════ -->
+  <div class="slide" data-num="04">
+    <h3>Bảng tổng hợp · So sánh chi tiết</h3>
+    <h2>4 Loại Phòng — So sánh toàn diện</h2>
+    <div class="rule-long"></div>
+    <div class="table-wrapper" style="flex: 1; overflow-y: auto;">
+      <table>
+        <thead>
+          <tr>
+            <th style="width: 15%;">Tiêu chí</th>
+            <th class="tokyo-col" style="width: 21%;"><span class="badge badge-amber" style="background: rgba(90,122,106,0.15); color: var(--tokyo-c); border-color: var(--tokyo-c);">Tokyo Vibe<br><span style="font-size:7px; font-weight:300; color: var(--text-dim);">Urban Drama</span></span></th>
+            <th class="kyoto-col" style="width: 21%;"><span class="badge badge-amber" style="background: rgba(154,112,96,0.15); color: var(--kyoto-c); border-color: var(--kyoto-c);">Kyoto Vibe<br><span style="font-size:7px; font-weight:300; color: var(--text-dim);">Zen Stillness</span></span></th>
+            <th class="newyork-col" style="width: 21%;"><span class="badge badge-amber" style="background: rgba(122,106,88,0.15); color: var(--newyork-c); border-color: var(--newyork-c);">New York Vibe<br><span style="font-size:7px; font-weight:300; color: var(--text-dim);">Residence Sanctuary</span></span></th>
+            <th class="metropole-col" style="width: 22%;"><span class="badge badge-amber" style="background: rgba(154,106,32,0.15); color: var(--metropole-c); border-color: var(--metropole-c);">Metropole Vibe<br><span style="font-size:7px; font-weight:300; color: var(--text-dim);">Classic Refinement</span></span></th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- VỊ TRÍ -->
+          <tr class="section-header"><td colspan="5">VỊ TRÍ & BỐI CẢNH</td></tr>
+          <tr>
+            <td class="td-label">Vị trí</td>
+            <td class="tokyo-col">Góc Tây Nam — ngã tư Lê Lai & Nguyễn Văn Tráng</td>
+            <td class="kyoto-col">Trục giữa mặt tiền Nam — view công viên 23/9</td>
+            <td class="newyork-col">Trục trên hông Tây Bắc — chạy dọc Nguyễn Văn Tráng</td>
+            <td class="metropole-col">Góc Đông Nam — khuất trong, giáp lõi thang bộ</td>
+          </tr>
+          <tr>
+            <td class="td-label">Hướng nắng</td>
+            <td class="tokyo-col">Tây Nam — nắng chiều xiên gắt</td>
+            <td class="kyoto-col">Nam — bức xạ mặt trời gay gắt nhất ban ngày</td>
+            <td class="newyork-col">Tây Bắc — nắng hông xiên nhẹ, linear</td>
+            <td class="metropole-col">Đông Nam — ít sáng trực tiếp, khuất tầm nhìn</td>
+          </tr>
+          <tr>
+            <td class="td-label">Đặc điểm</td>
+            <td class="tokyo-col">View panorama đô thị mở rộng, ngã tư sầm uất</td>
+            <td class="kyoto-col">Đón thiên nhiên, kết nối với công viên</td>
+            <td class="newyork-col">Cấu trúc linear kéo dài, phân lớp không gian</td>
+            <td class="metropole-col">Ẩn náu nội tâm, riêng tư tuyệt đối</td>
+          </tr>
+          <!-- CẢM XÚC -->
+          <tr class="section-header"><td colspan="5">CẢM XÚC & MOOD</td></tr>
+          <tr>
+            <td class="td-label">Cảm xúc chủ đạo</td>
+            <td class="tokyo-col"><strong>Kịch tính điện ảnh</strong> — Shadow Play sắc lẹm</td>
+            <td class="kyoto-col"><strong>Tĩnh lặng sâu sắc</strong> — Sương mù dịu nhẹ</td>
+            <td class="newyork-col"><strong>Kén trú ẩn trưởng thành</strong> — Penthouse riêng tư</td>
+            <td class="metropole-col"><strong>Thanh lịch vượt thời gian</strong> — Hộp trang sức ấm áp</td>
+          </tr>
+          <tr>
+            <td class="td-label">Phong cách</td>
+            <td class="tokyo-col">Tokyo skyline minimalism</td>
+            <td class="kyoto-col">Kyoto Zen sanctuary</td>
+            <td class="newyork-col">New York residence</td>
+            <td class="metropole-col">Indochine refinement</td>
+          </tr>
+          <tr>
+            <td class="td-label">Mood từ khóa</td>
+            <td class="tokyo-col">dramatic · cinematic · urban · tactile · grounded</td>
+            <td class="kyoto-col">serene · contemplative · healing · purifying · meditative</td>
+            <td class="newyork-col">masculine · intimate · scholarly · quiet · private</td>
+            <td class="metropole-col">romantic · nostalgic · indochine · intimate · timeless</td>
+          </tr>
+          <!-- VẬT LIỆU CHÍNH -->
+          <tr class="section-header"><td colspan="5">VẬT LIỆU CHÍNH</td></tr>
+          <tr>
+            <td class="td-label">Feature material</td>
+            <td class="tokyo-col">Đá Bazan đen chẻ thô nguyên tảng</td>
+            <td class="kyoto-col">Gỗ bách Hinoki nguyên khối (Ofuro)</td>
+            <td class="newyork-col">Tủ thư viện kịch trần bọc da sậm</td>
+            <td class="metropole-col">Mây đan Đông Dương + Marble bóng</td>
+          </tr>
+          <tr>
+            <td class="td-label">Khung xương</td>
+            <td class="tokyo-col">Walnut lam đứng (shadow grid)</td>
+            <td class="kyoto-col">Walnut âm tường, viền cửa mảnh</td>
+            <td class="newyork-col">Walnut đậm toàn khung giường + tủ</td>
+            <td class="metropole-col">Walnut nhẹ, khung giường mảnh</td>
+          </tr>
+          <tr>
+            <td class="td-label">Nền tảng</td>
+            <td class="tokyo-col">Plaster ngà xám + kính hộp Low-E</td>
+            <td class="kyoto-col">Washi paper ép kính + plaster</td>
+            <td class="newyork-col">Level 5 plaster siêu phẳng</td>
+            <td class="metropole-col">Polished marble + plaster ấm</td>
+          </tr>
+          <tr>
+            <td class="td-label">Phần cứng</td>
+            <td class="tokyo-col">Blackened steel · Sắt đen nhám</td>
+            <td class="kyoto-col">Brushed bronze · Đồng mờ xước</td>
+            <td class="newyork-col">Brushed bronze · Đồng mờ</td>
+            <td class="metropole-col">Brass patina · Đồng thau patina</td>
+          </tr>
+          <!-- ÁNH SÁNG -->
+          <tr class="section-header"><td colspan="5">ÁNH SÁNG</td></tr>
+          <tr>
+            <td class="td-label">Nhiệt độ màu</td>
+            <td class="tokyo-col">2800K warm tungsten + cool accent cho texture</td>
+            <td class="kyoto-col">2700K diffused Washi glow + lantern sconces</td>
+            <td class="newyork-col">2600K grazing + 3200K cove sau kệ sách</td>
+            <td class="metropole-col">2200K amber — ấm như ánh nến</td>
+          </tr>
+          <tr>
+            <td class="td-label">Loại ánh sáng</td>
+            <td class="tokyo-col">Shadow play, daylight xiên qua lam gỗ</td>
+            <td class="kyoto-col">Soft diffused qua Washi, natural daylight</td>
+            <td class="newyork-col">Grazing light là là từ khe rèm & kệ sách</td>
+            <td class="metropole-col">Low-level indirect, amber lọc qua mây đan</td>
+          </tr>
+          <!-- KỸ THUẬT -->
+          <tr class="section-header"><td colspan="5">KỸ THUẬT & CÁCH ÂM</td></tr>
+          <tr>
+            <td class="td-label">Cách âm</td>
+            <td class="tokyo-col">STC ≥ 50 (vách tiếp giáp hành lang)</td>
+            <td class="kyoto-col">STC ≥ 45 + sound-absorbing surfaces</td>
+            <td class="newyork-col">STC > 55 vách đệm kép (double-stud)</td>
+            <td class="metropole-col">STC ≥ 50 + lớp polycarbonate mặt sau mây</td>
+          </tr>
+          <tr>
+            <td class="td-label">Xử lý đặc biệt</td>
+            <td class="tokyo-col">Nano sealer đá Bazan chống ố & efflorescence</td>
+            <td class="kyoto-col">Không Clo/Javel (bảo tồn tinh dầu Hinoki)</td>
+            <td class="newyork-col">Level 5 plaster — độ phẳng cao nhất</td>
+            <td class="metropole-col">Polycarbonate backing chống chùng & nấm mốc</td>
+          </tr>
+          <!-- AMENITIES -->
+          <tr class="section-header"><td colspan="5">AMENITIES & TRẢI NGHIỆM</td></tr>
+          <tr>
+            <td class="td-label">Tiện nghi đặc trưng</td>
+            <td class="tokyo-col">Ofuro · Shadow grid view · Panorama window</td>
+            <td class="kyoto-col">Tatami zone · Kampo herbs · Washi bath</td>
+            <td class="newyork-col">Walk-in closet · Library wall · Linear foyer</td>
+            <td class="metropole-col">Daybed lounge · Rattan screen · Open bath</td>
+          </tr>
+          <tr>
+            <td class="td-label">Spa / Wellness</td>
+            <td class="tokyo-col">Aman Spa + 30m pool view Mt. Fuji</td>
+            <td class="kyoto-col">Kampo ritual · Misogi purification · Camphor oil</td>
+            <td class="newyork-col">Private wellness corner · Thermal suite</td>
+            <td class="metropole-col">Tranquility lounge · Marble steam</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════ -->
+  <!-- SLIDE 05 — CÔNG THỨC VẬT LIỆU 40-30-20-10 -->
+  <!-- ═══════════════════════════════════════════ -->
+  <div class="slide" data-num="05">
+    <h3>Hệ vật liệu · Khung CapEx</h3>
+    <h2>Công thức 40–30–20–10</h2>
+    <div class="rule-long"></div>
+    <div class="grid-2-1">
+      <div>
+        <div class="table-wrapper" style="margin-bottom: 14px;">
+          <table>
+            <thead>
+              <tr>
+                <th>Tỷ lệ</th>
+                <th>Hạng mục</th>
+                <th>Vật liệu</th>
+                <th>CapEx</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td class="td-num">40%</td>
+                <td class="td-label">Nền tảng tĩnh & Ánh sáng trống</td>
+                <td>Plaster đất sét · Washi · Trần trôi</td>
+                <td class="td-num">Hạ tầng lõi</td>
+              </tr>
+              <tr>
+                <td class="td-num">30%</td>
+                <td class="td-label">Khung xương Gỗ Walnut</td>
+                <td>Walnut veneer · Lam đứng · Viền cửa</td>
+                <td class="td-num">Khung xương</td>
+              </tr>
+              <tr>
+                <td class="td-num">20%</td>
+                <td class="td-label">Xúc giác bản địa</td>
+                <td>Hinoki · Tatami · Bazan · Mây đan</td>
+                <td class="td-num">Linh hồn xúc giác</td>
+              </tr>
+              <tr>
+                <td class="td-num">10%</td>
+                <td class="td-label">Chế tác tay & Chi tiết vi mô</td>
+                <td>Ofuro · Mộng móc · Đồng mờ xước</td>
+                <td class="td-num">Chi tiết bespoke</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Bảng khái niệm kỹ thuật -->
+        <h4 style="margin-bottom: 10px;">Bảng giải thích khái niệm kỹ thuật</h4>
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Khái niệm</th>
+                <th>Định nghĩa</th>
+                <th>Ứng dụng</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td class="td-label">LRV (Light Reflectance Value)</td>
+                <td>Chỉ số phản xạ ánh sáng của bề mặt (0–100%). Gỗ Walnut tối có LRV thấp.</td>
+                <td>Công thức 40-30-20-10 giải quyết hội chứng không gian hẹp do LRV thấp</td>
+              </tr>
+              <tr>
+                <td class="td-label">STC (Sound Transmission Class)</td>
+                <td>Chỉ số cách âm của vách (dB giảm được). STC > 55 = tĩnh lặng tuyệt đối.</td>
+                <td>Vách đệm kép double-stud cho New York Vibe</td>
+              </tr>
+              <tr>
+                <td class="td-label">Grazing light</td>
+                <td>Ánh sáng hắt xiên là là bề mặt, làm nổi bật texture & khuyết điểm</td>
+                <td>Level 5 plaster bắt buộc để tránh lộ khuyết khi dùng grazing light</td>
+              </tr>
+              <tr>
+                <td class="td-label">Efflorescence</td>
+                <td>Vệt ố trắng do canxi đọng trên đá bazan khi tiếp xúc nước/xà phòng</td>
+                <td>Giải pháp: nano sealer penetrating, phủ mờ 100% không đổi màu</td>
+              </tr>
+              <tr>
+                <td class="td-label">Washi tán xạ quang</td>
+                <td>Giấy Washi với cấu trúc xơ hoạt động như thấu kính phân kỳ tán xạ ánh sáng</td>
+                <td>Ép giữa 2 lớp kính cường lực để bảo tồn hiệu ứng + độ bền</td>
+              </tr>
+              <tr>
+                <td class="td-label">Kampo (漢法)</td>
+                <td>Y học cổ truyền Nhật Bản dựa trên thảo dược, công nhận thiên nhiên & cân bằng là chìa khóa sức khỏe</td>
+                <td>Spa menu tích hợp thảo dược Kampo theo mùa cho Kyoto Vibe</td>
+              </tr>
+              <tr>
+                <td class="td-label">Misogi (褰)</td>
+                <td>Nghi thức thanh tẩy bằng nước trước mọi hành trình tâm linh — truyền thống Shinto</td>
+                <td>Mở đầu mỗi Aman Spa journey bằng foot bath Kampo + dầu camphor</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div>
+        <!-- Swatches -->
+        <div class="card" style="margin-bottom: 12px;">
+          <h5>Bảng màu vật liệu</h5>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 10px;">
+            <div style="display: flex; gap: 8px; align-items: center;">
+              <div style="width: 36px; height: 36px; border-radius: 2px; background: #3a3028; flex-shrink: 0; border: 1px solid var(--border);"></div>
+              <div><div style="font-size: 11px; font-weight: 400; color: var(--text);">Dark Walnut</div><div style="font-size: 9px; color: var(--text-dim);">30% — Khung xương</div></div>
+            </div>
+            <div style="display: flex; gap: 8px; align-items: center;">
+              <div style="width: 36px; height: 36px; border-radius: 2px; background: #e8dfd0; flex-shrink: 0; border: 1px solid var(--border);"></div>
+              <div><div style="font-size: 11px; font-weight: 400; color: var(--text);">Plaster / Washi</div><div style="font-size: 9px; color: var(--text-dim);">40% — Nền tảng</div></div>
+            </div>
+            <div style="display: flex; gap: 8px; align-items: center;">
+              <div style="width: 36px; height: 36px; border-radius: 2px; background: #1a1814; flex-shrink: 0; border: 1px solid var(--border);"></div>
+              <div><div style="font-size: 11px; font-weight: 400; color: var(--text);">Bazan Black</div><div style="font-size: 9px; color: var(--text-dim);">20% — Xúc giác</div></div>
+            </div>
+            <div style="display: flex; gap: 8px; align-items: center;">
+              <div style="width: 36px; height: 36px; border-radius: 2px; background: #c8a870; flex-shrink: 0; border: 1px solid var(--border);"></div>
+              <div><div style="font-size: 11px; font-weight: 400; color: var(--text);">Brushed Bronze</div><div style="font-size: 9px; color: var(--text-dim);">10% — Phần cứng</div></div>
+            </div>
+            <div style="display: flex; gap: 8px; align-items: center;">
+              <div style="width: 36px; height: 36px; border-radius: 2px; background: linear-gradient(135deg,#d4a870,#e8c890); flex-shrink: 0; border: 1px solid var(--border);"></div>
+              <div><div style="font-size: 11px; font-weight: 400; color: var(--text);">Amber / Hinoki</div><div style="font-size: 9px; color: var(--text-dim);">2200K — Ánh sáng</div></div>
+            </div>
+            <div style="display: flex; gap: 8px; align-items: center;">
+              <div style="width: 36px; height: 36px; border-radius: 2px; background: #8a7a60; flex-shrink: 0; border: 1px solid var(--border);"></div>
+              <div><div style="font-size: 11px; font-weight: 400; color: var(--text);">Rattan / Tatami</div><div style="font-size: 9px; color: var(--text-dim);">20% — Bản địa</div></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Nguyên tắc -->
+        <div class="card">
+          <h5>Nguyên tắc bắt buộc</h5>
+          <ul>
+            <li>Tuyệt đối không Chrome bóng / Vàng gương</li>
+            <li>Không ốp gỗ kín trần phòng ngủ</li>
+            <li>Chỉ dùng Brushed Bronze hoặc sắt đen nhám</li>
+            <li>Mộng móc truyền thống — không đinh vít</li>
+            <li>Độ phẳng Level 5 cho grazing light zones</li>
+            <li>Khoảng trống (Ma) cho ánh sáng nảy nở</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════ -->
+  <!-- SLIDE 06 — SƠ ĐỒ MẶT BẰNG SVG              -->
+  <!-- ═══════════════════════════════════════════ -->
+  <div class="slide" data-num="06">
+    <h3>Sơ đồ mặt bằng · Minh họa</h3>
+    <h2>Sơ đồ 4 Loại Phòng</h2>
+    <div class="rule-long"></div>
+    <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; flex: 1;">
+      <!-- TOKYO -->
+      <div>
+        <div class="card" style="height: 100%;">
+          <div class="card-num">TOKYO VIBE</div>
+          <h4 style="font-size: 16px; margin-bottom: 2px;">Urban Drama</h4>
+          <p style="font-size: 10px; color: var(--tokyo-c); font-family: 'Space Mono', monospace; margin-bottom: 10px;">Góc Tây Nam · Ngã tư</p>
+          <svg viewBox="0 0 220 180" style="width: 100%; border: 1px solid var(--border); border-radius: 2px; background: var(--surface2);">
+            <!-- Outer walls -->
+            <rect x="10" y="10" width="200" height="160" fill="none" stroke="#c8bfb0" stroke-width="2"/>
+            <!-- Corner window (SW) -->
+            <rect x="130" y="10" width="80" height="40" fill="rgba(90,122,106,0.15)" stroke="#5a7a6a" stroke-width="1.5"/>
+            <text x="170" y="30" font-size="6" fill="#5a7a6a" text-anchor="middle" font-family="monospace">PANORAMA</text>
+            <text x="170" y="38" font-size="5" fill="#5a7a6a" text-anchor="middle" font-family="monospace">◄ SW</text>
+            <!-- Bazan feature wall -->
+            <rect x="10" y="10" width="40" height="60" fill="rgba(26,24,20,0.6)" stroke="#1a1814" stroke-width="1"/>
+            <text x="30" y="40" font-size="5.5" fill="#e8dfd0" text-anchor="middle" font-family="monospace">BAZAN</text>
+            <text x="30" y="48" font-size="5" fill="#e8dfd0" text-anchor="middle" font-family="monospace">WALL</text>
+            <!-- Walnut lamellar grid -->
+            <line x1="10" y1="75" x2="130" y2="75" stroke="#5a4030" stroke-width="1.5"/>
+            <line x1="10" y1="85" x2="130" y2="85" stroke="#5a4030" stroke-width="1"/>
+            <line x1="10" y1="95" x2="130" y2="95" stroke="#5a4030" stroke-width="1"/>
+            <line x1="10" y1="105" x2="130" y2="105" stroke="#5a4030" stroke-width="1"/>
+            <text x="70" y="92" font-size="5" fill="#8a7050" text-anchor="middle" font-family="monospace">WALNUT LAM GRID</text>
+            <!-- Shadow play indicators -->
+            <line x1="130" y1="78" x2="110" y2="78" stroke="#d4a030" stroke-width="0.5" stroke-dasharray="2,1"/>
+            <line x1="130" y1="85" x2="105" y2="85" stroke="#d4a030" stroke-width="0.5" stroke-dasharray="2,1"/>
+            <line x1="130" y1="92" x2="100" y2="92" stroke="#d4a030" stroke-width="0.5" stroke-dasharray="2,1"/>
+            <text x="118" y="82" font-size="4.5" fill="#d4a030" font-family="monospace">SHADOW</text>
+            <!-- Bed -->
+            <rect x="50" y="110" width="70" height="45" fill="rgba(58,48,40,0.3)" stroke="#3a3028" stroke-width="1"/>
+            <text x="85" y="135" font-size="5.5" fill="#3a3028" text-anchor="middle" font-family="monospace">BED</text>
+            <!-- Walnut wardrobe -->
+            <rect x="10" y="110" width="38" height="45" fill="rgba(58,48,40,0.2)" stroke="#5a4030" stroke-width="0.5"/>
+            <text x="29" y="135" font-size="5" fill="#5a4030" text-anchor="middle" font-family="monospace">WALNUT</text>
+            <!-- Ofuro bath -->
+            <ellipse cx="160" cy="155" rx="30" ry="12" fill="rgba(26,24,20,0.4)" stroke="#1a1814" stroke-width="1"/>
+            <text x="160" y="158" font-size="5.5" fill="#e8dfd0" text-anchor="middle" font-family="monospace">OFURO</text>
+            <!-- Vanity -->
+            <rect x="125" y="140" width="30" height="18" fill="rgba(42,40,32,0.3)" stroke="#2a2820" stroke-width="0.5"/>
+            <text x="140" y="151" font-size="5" fill="#2a2820" text-anchor="middle" font-family="monospace">VANITY</text>
+            <!-- Light direction arrow (afternoon west) -->
+            <path d="M 215 60 L 195 60 L 198 55 M 195 60 L 198 65" stroke="#d4a030" stroke-width="1" fill="none"/>
+            <text x="215" y="58" font-size="5" fill="#d4a030" text-anchor="start" font-family="monospace">W</text>
+          </svg>
+          <div style="margin-top: 8px;">
+            <div style="font-size: 9px; color: var(--amber); font-family: 'Space Mono', monospace; margin-bottom: 4px;">ĐẶC ĐIỂM</div>
+            <div style="font-size: 10px; color: var(--text-muted);">Shadow play · Bazan · Lam đứng · Panorama góc</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- KYOTO -->
+      <div>
+        <div class="card" style="height: 100%;">
+          <div class="card-num">KYOTO VIBE</div>
+          <h4 style="font-size: 16px; margin-bottom: 2px;">Zen Stillness</h4>
+          <p style="font-size: 10px; color: var(--kyoto-c); font-family: 'Space Mono', monospace; margin-bottom: 10px;">Trục Nam · Công viên</p>
+          <svg viewBox="0 0 220 180" style="width: 100%; border: 1px solid var(--border); border-radius: 2px; background: var(--surface2);">
+            <!-- Outer walls -->
+            <rect x="10" y="10" width="200" height="160" fill="none" stroke="#c8bfb0" stroke-width="2"/>
+            <!-- Washi Shoji South -->
+            <rect x="10" y="10" width="200" height="35" fill="rgba(232,223,208,0.7)" stroke="#e8dfd0" stroke-width="1.5"/>
+            <line x1="10" y1="22" x2="210" y2="22" stroke="#d8d0c4" stroke-width="0.5"/>
+            <line x1="10" y1="34" x2="210" y2="34" stroke="#d8d0c4" stroke-width="0.5"/>
+            <line x1="55" y1="10" x2="55" y2="45" stroke="#d8d0c4" stroke-width="0.5"/>
+            <line x1="100" y1="10" x2="100" y2="45" stroke="#d8d0c4" stroke-width="0.5"/>
+            <line x1="145" y1="10" x2="145" y2="45" stroke="#d8d0c4" stroke-width="0.5"/>
+            <line x1="190" y1="10" x2="190" y2="45" stroke="#d8d0c4" stroke-width="0.5"/>
+            <text x="110" y="28" font-size="5.5" fill="#9a7060" text-anchor="middle" font-family="monospace">WASHI SHOJI — DIFFUSED LIGHT</text>
+            <!-- Sun / light arrows (South) -->
+            <path d="M 110 5 L 110 12 M 105 8 L 110 12 L 115 8" stroke="#d4a030" stroke-width="1" fill="none"/>
+            <!-- Wardrobe recessed -->
+            <rect x="10" y="50" width="45" height="60" fill="rgba(58,48,40,0.2)" stroke="#5a4030" stroke-width="0.5"/>
+            <text x="32" y="82" font-size="5" fill="#5a4030" text-anchor="middle" font-family="monospace">WALNUT</text>
+            <text x="32" y="88" font-size="5" fill="#5a4030" text-anchor="middle" font-family="monospace">RECESSED</text>
+            <!-- Ofuro Hinoki -->
+            <rect x="60" y="50" width="80" height="55" fill="rgba(212,168,112,0.3)" stroke="#d4a870" stroke-width="1.5"/>
+            <text x="100" y="70" font-size="5.5" fill="#9a6030" text-anchor="middle" font-family="monospace">HINOKI OFURO</text>
+            <text x="100" y="78" font-size="5" fill="#9a6030" text-anchor="middle" font-family="monospace">(nguyên khối)</text>
+            <!-- Tatami zone -->
+            <rect x="60" y="110" width="80" height="45" fill="rgba(138,122,80,0.25)" stroke="#8a7a50" stroke-width="1" stroke-dasharray="3,2"/>
+            <text x="100" y="132" font-size="5.5" fill="#6a5a30" text-anchor="middle" font-family="monospace">TATAMI ZONE</text>
+            <text x="100" y="140" font-size="5" fill="#6a5a30" text-anchor="middle" font-family="monospace">thiền định</text>
+            <!-- Study corner -->
+            <rect x="145" y="50" width="65" height="105" fill="rgba(232,223,208,0.3)" stroke="#d8d0c4" stroke-width="0.5"/>
+            <text x="177" y="100" font-size="5" fill="#8a7060" text-anchor="middle" font-family="monospace">KHU VỰC HỌC</text>
+            <text x="177" y="108" font-size="5" fill="#8a7060" text-anchor="middle" font-family="monospace">/ THIỀN ĐỊNH</text>
+          </svg>
+          <div style="margin-top: 8px;">
+            <div style="font-size: 9px; color: var(--amber); font-family: 'Space Mono', monospace; margin-bottom: 4px;">ĐẶC ĐIỂM</div>
+            <div style="font-size: 10px; color: var(--text-muted);">Washi Shoji · Hinoki Ofuro · Tatami · View công viên</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- NEW YORK -->
+      <div>
+        <div class="card" style="height: 100%;">
+          <div class="card-num">NEW YORK VIBE</div>
+          <h4 style="font-size: 16px; margin-bottom: 2px;">Residence Sanctuary</h4>
+          <p style="font-size: 10px; color: var(--newyork-c); font-family: 'Space Mono', monospace; margin-bottom: 10px;">Tây Bắc · Linear</p>
+          <svg viewBox="0 0 220 180" style="width: 100%; border: 1px solid var(--border); border-radius: 2px; background: var(--surface2);">
+            <!-- Outer walls -->
+            <rect x="10" y="10" width="200" height="160" fill="none" stroke="#c8bfb0" stroke-width="2"/>
+            <!-- Library wall (full height) -->
+            <rect x="10" y="10" width="70" height="130" fill="rgba(42,32,24,0.5)" stroke="#2a2018" stroke-width="1"/>
+            <!-- Book spines -->
+            <rect x="14" y="14" width="8" height="20" fill="rgba(74,48,32,0.6)" stroke="#3a2820" stroke-width="0.3"/>
+            <rect x="24" y="16" width="8" height="18" fill="rgba(80,56,40,0.5)" stroke="#3a2820" stroke-width="0.3"/>
+            <rect x="34" y="13" width="8" height="21" fill="rgba(60,40,28,0.6)" stroke="#3a2820" stroke-width="0.3"/>
+            <rect x="44" y="15" width="8" height="19" fill="rgba(90,64,44,0.5)" stroke="#3a2820" stroke-width="0.3"/>
+            <rect x="54" y="14" width="8" height="20" fill="rgba(70,48,32,0.6)" stroke="#3a2820" stroke-width="0.3"/>
+            <rect x="64" y="16" width="8" height="18" fill="rgba(84,58,38,0.5)" stroke="#3a2820" stroke-width="0.3"/>
+            <text x="45" y="72" font-size="5.5" fill="#c0a878" text-anchor="middle" font-family="monospace" transform="rotate(-90, 45, 72)">THƯ VIỆN KỊCH TRẦN</text>
+            <!-- Acoustic wall indicator -->
+            <line x1="80" y1="10" x2="80" y2="140" stroke="#9a6a20" stroke-width="0.5" stroke-dasharray="2,1"/>
+            <text x="83" y="78" font-size="4.5" fill="#9a6a20" font-family="monospace">STC&gt;55</text>
+            <!-- Study foyer (linear) -->
+            <rect x="80" y="10" width="20" height="130" fill="rgba(232,223,208,0.2)" stroke="#d8d0c4" stroke-width="0.5"/>
+            <text x="90" y="75" font-size="4.5" fill="#8a7060" text-anchor="middle" font-family="monospace" transform="rotate(-90, 90, 75)">SẢNH TIỀN</text>
+            <!-- Bedroom -->
+            <rect x="100" y="10" width="80" height="80" fill="rgba(58,48,40,0.2)" stroke="#3a3028" stroke-width="0.5"/>
+            <text x="140" y="55" font-size="5.5" fill="#3a3028" text-anchor="middle" font-family="monospace">PHÒNG NGỦ</text>
+            <!-- North window -->
+            <rect x="100" y="10" width="80" height="20" fill="rgba(200,220,240,0.2)" stroke="#a0b8c8" stroke-width="0.5"/>
+            <text x="140" y="23" font-size="5" fill="#8090a0" text-anchor="middle" font-family="monospace">◄ HƯỚNG BẮC</text>
+            <!-- Grazing light -->
+            <line x1="100" y1="10" x2="100" y2="90" stroke="#d4a030" stroke-width="0.5" stroke-dasharray="1,2"/>
+            <text x="100" y="95" font-size="4" fill="#d4a030" text-anchor="middle" font-family="monospace" transform="rotate(-90, 100, 95)">GRAZING</text>
+            <!-- Walk-in + bath -->
+            <rect x="100" y="95" width="50" height="45" fill="rgba(232,223,208,0.2)" stroke="#c8bfb0" stroke-width="0.5"/>
+            <text x="125" y="118" font-size="5" fill="#8a7060" text-anchor="middle" font-family="monospace">WALK-IN</text>
+            <rect x="155" y="95" width="55" height="45" fill="rgba(58,56,48,0.2)" stroke="#3a3830" stroke-width="0.5"/>
+            <text x="182" y="118" font-size="5" fill="#3a3830" text-anchor="middle" font-family="monospace">BATH</text>
+          </svg>
+          <div style="margin-top: 8px;">
+            <div style="font-size: 9px; color: var(--amber); font-family: 'Space Mono', monospace; margin-bottom: 4px;">ĐẶC ĐIỂM</div>
+            <div style="font-size: 10px; color: var(--text-muted);">Thư viện kịch trần · STC>55 · Sảnh Linear · Grazing light</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- METROPOLE -->
+      <div>
+        <div class="card" style="height: 100%;">
+          <div class="card-num">METROPOLE VIBE</div>
+          <h4 style="font-size: 16px; margin-bottom: 2px;">Classic Refinement</h4>
+          <p style="font-size: 10px; color: var(--metropole-c); font-family: 'Space Mono', monospace; margin-bottom: 10px;">Đông Nam · Ẩn náu</p>
+          <svg viewBox="0 0 220 180" style="width: 100%; border: 1px solid var(--border); border-radius: 2px; background: var(--surface2);">
+            <!-- Outer walls -->
+            <rect x="10" y="10" width="200" height="160" fill="none" stroke="#c8bfb0" stroke-width="2"/>
+            <!-- Amber jewel box window -->
+            <rect x="10" y="10" width="200" height="35" fill="rgba(212,168,112,0.25)" stroke="#d4a870" stroke-width="1.5"/>
+            <!-- Rattan pattern -->
+            <line x1="30" y1="10" x2="30" y2="45" stroke="#8a7a60" stroke-width="0.5"/>
+            <line x1="50" y1="10" x2="50" y2="45" stroke="#8a7a60" stroke-width="0.5"/>
+            <line x1="70" y1="10" x2="70" y2="45" stroke="#8a7a60" stroke-width="0.5"/>
+            <line x1="90" y1="10" x2="90" y2="45" stroke="#8a7a60" stroke-width="0.5"/>
+            <line x1="110" y1="10" x2="110" y2="45" stroke="#8a7a60" stroke-width="0.5"/>
+            <line x1="130" y1="10" x2="130" y2="45" stroke="#8a7a60" stroke-width="0.5"/>
+            <line x1="150" y1="10" x2="150" y2="45" stroke="#8a7a60" stroke-width="0.5"/>
+            <line x1="170" y1="10" x2="170" y2="45" stroke="#8a7a60" stroke-width="0.5"/>
+            <line x1="190" y1="10" x2="190" y2="45" stroke="#8a7a60" stroke-width="0.5"/>
+            <line x1="10" y1="20" x2="210" y2="20" stroke="#8a7a60" stroke-width="0.5"/>
+            <line x1="10" y1="35" x2="210" y2="35" stroke="#8a7a60" stroke-width="0.5"/>
+            <text x="110" y="28" font-size="5.5" fill="#9a6820" text-anchor="middle" font-family="monospace">RATTAN SCREEN · AMBER 2200K</text>
+            <!-- Amber glow rays -->
+            <line x1="20" y1="45" x2="30" y2="90" stroke="#d4a030" stroke-width="0.3" opacity="0.6"/>
+            <line x1="60" y1="45" x2="70" y2="90" stroke="#d4a030" stroke-width="0.3" opacity="0.6"/>
+            <line x1="100" y1="45" x2="110" y2="90" stroke="#d4a030" stroke-width="0.3" opacity="0.6"/>
+            <line x1="140" y1="45" x2="150" y2="90" stroke="#d4a030" stroke-width="0.3" opacity="0.6"/>
+            <line x1="180" y1="45" x2="190" y2="90" stroke="#d4a030" stroke-width="0.3" opacity="0.6"/>
+            <text x="110" y="68" font-size="4.5" fill="#d4a030" text-anchor="middle" font-family="monospace">amber rays</text>
+            <!-- Lounge corner with daybed -->
+            <rect x="10" y="50" width="100" height="60" fill="rgba(138,122,96,0.2)" stroke="#8a7a60" stroke-width="0.5"/>
+            <rect x="15" y="55" width="90" height="20" fill="rgba(160,144,120,0.3)" stroke="#8a7a60" stroke-width="0.5"/>
+            <text x="60" y="68" font-size="5.5" fill="#6a5a40" text-anchor="middle" font-family="monospace">LOUNGE / DAYBED</text>
+            <!-- Bed -->
+            <rect x="115" y="50" width="95" height="60" fill="rgba(58,48,40,0.2)" stroke="#3a3028" stroke-width="0.5"/>
+            <text x="162" y="83" font-size="5.5" fill="#3a3028" text-anchor="middle" font-family="monospace">GIƯỜNG</text>
+            <!-- Open bath -->
+            <rect x="10" y="115" width="200" height="45" fill="rgba(224,216,200,0.3)" stroke="#c0b8a8" stroke-width="1"/>
+            <!-- Marble floor pattern -->
+            <rect x="15" y="120" width="40" height="35" fill="rgba(224,216,200,0.4)" stroke="#c0b8a8" stroke-width="0.3"/>
+            <rect x="58" y="120" width="40" height="35" fill="rgba(200,190,175,0.4)" stroke="#c0b8a8" stroke-width="0.3"/>
+            <rect x="101" y="120" width="40" height="35" fill="rgba(224,216,200,0.4)" stroke="#c0b8a8" stroke-width="0.3"/>
+            <rect x="144" y="120" width="40" height="35" fill="rgba(200,190,175,0.4)" stroke="#c0b8a8" stroke-width="0.3"/>
+            <text x="110" y="142" font-size="5.5" fill="#9a8a78" text-anchor="middle" font-family="monospace">PHÒNG TẮM MARBLE (OPEN)</text>
+            <!-- Brass fixtures -->
+            <circle cx="175" cy="137" r="4" fill="rgba(200,169,112,0.5)" stroke="#c8a870" stroke-width="0.5"/>
+            <circle cx="185" cy="137" r="4" fill="rgba(200,169,112,0.5)" stroke="#c8a870" stroke-width="0.5"/>
+            <circle cx="195" cy="137" r="4" fill="rgba(200,169,112,0.5)" stroke="#c8a870" stroke-width="0.5"/>
+            <text x="185" y="157" font-size="4.5" fill="#c8a870" text-anchor="middle" font-family="monospace">brass fixtures</text>
+          </svg>
+          <div style="margin-top: 8px;">
+            <div style="font-size: 9px; color: var(--amber); font-family: 'Space Mono', monospace; margin-bottom: 4px;">ĐẶC ĐIỂM</div>
+            <div style="font-size: 10px; color: var(--text-muted);">Rattan · Amber 2200K · Marble bóng · Open bath · Jewelry box</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════ -->
+  <!-- SLIDE 07 — ROOM: TOKYO VIBE                -->
+  <!-- ═══════════════════════════════════════════ -->
+  <div class="slide room-slide room-tokyo" data-num="07">
+    <div class="room-header">
+      <div>
+        <h3>Loại phòng 01 · Urban Drama</h3>
+        <h1 style="font-size: 42px;">Tokyo Vibe</h1>
+        <p class="room-tagline">"Kịch tính điện ảnh"</p>
+      </div>
+      <div class="room-vibe-tag">Góc Tây Nam · Shadow Play · Đá Bazan</div>
+    </div>
+    <div class="room-body">
+      <!-- COL 1: SVG + SWATCHES -->
+      <div class="room-col">
+        <div class="floor-svg-wrap">
+          <div class="floor-svg-label">SƠ ĐỒ MẶT BẰNG</div>
+          <svg viewBox="0 0 260 200" style="width: 100%;">
+            <rect x="5" y="5" width="250" height="190" fill="none" stroke="#c8bfb0" stroke-width="2"/>
+            <!-- Corner panorama SW -->
+            <rect x="155" y="5" width="100" height="45" fill="rgba(90,122,106,0.12)" stroke="#5a7a6a" stroke-width="1.5"/>
+            <text x="205" y="22" font-size="6" fill="#5a7a6a" text-anchor="middle" font-family="monospace">PANORAMA ◄ SW</text>
+            <text x="205" y="32" font-size="5" fill="#5a7a6a" text-anchor="middle" font-family="monospace">ngã tư Lê Lai</text>
+            <!-- Bazan feature -->
+            <rect x="5" y="5" width="50" height="70" fill="rgba(26,24,20,0.65)" stroke="#1a1814" stroke-width="1"/>
+            <text x="30" y="35" font-size="6" fill="#e8dfd0" text-anchor="middle" font-family="monospace">BAZAN</text>
+            <text x="30" y="44" font-size="5.5" fill="#e8dfd0" text-anchor="middle" font-family="monospace">WALL</text>
+            <!-- Walnut lam -->
+            <line x1="5" y1="80" x2="155" y2="80" stroke="#5a4030" stroke-width="1.5"/>
+            <line x1="5" y1="90" x2="155" y2="90" stroke="#5a4030" stroke-width="1"/>
+            <line x1="5" y1="100" x2="155" y2="100" stroke="#5a4030" stroke-width="1"/>
+            <line x1="5" y1="110" x2="155" y2="110" stroke="#5a4030" stroke-width="1"/>
+            <text x="80" y="97" font-size="5.5" fill="#8a7050" text-anchor="middle" font-family="monospace">WALNUT LAM — SHADOW GRID</text>
+            <!-- Shadow play lines -->
+            <line x1="155" y1="83" x2="130" y2="83" stroke="#d4a030" stroke-width="0.5" stroke-dasharray="3,1.5"/>
+            <line x1="155" y1="90" x2="120" y2="90" stroke="#d4a030" stroke-width="0.5" stroke-dasharray="3,1.5"/>
+            <line x1="155" y1="97" x2="110" y2="97" stroke="#d4a030" stroke-width="0.5" stroke-dasharray="3,1.5"/>
+            <line x1="155" y1="104" x2="100" y2="104" stroke="#d4a030" stroke-width="0.5" stroke-dasharray="3,1.5"/>
+            <text x="130" y="80" font-size="4.5" fill="#d4a030" font-family="monospace">SHADOW</text>
+            <!-- West sun arrow -->
+            <path d="M 255 55 L 160 55 M 164 50 L 160 55 L 164 60" stroke="#d4a030" stroke-width="1.2" fill="none"/>
+            <text x="255" y="53" font-size="6" fill="#d4a030" text-anchor="end" font-family="monospace">TÂY</text>
+            <!-- Bed -->
+            <rect x="55" y="115" width="90" height="55" fill="rgba(58,48,40,0.25)" stroke="#3a3028" stroke-width="0.8"/>
+            <text x="100" y="146" font-size="6" fill="#3a3028" text-anchor="middle" font-family="monospace">GIƯỜNG</text>
+            <!-- Walnut wardrobe -->
+            <rect x="5" y="115" width="48" height="55" fill="rgba(58,48,40,0.15)" stroke="#5a4030" stroke-width="0.5"/>
+            <text x="29" y="145" font-size="5.5" fill="#5a4030" text-anchor="middle" font-family="monospace">TỦ GỖ</text>
+            <!-- Ofuro -->
+            <ellipse cx="195" cy="172" rx="38" ry="15" fill="rgba(26,24,20,0.5)" stroke="#1a1814" stroke-width="1"/>
+            <text x="195" y="176" font-size="6" fill="#e8dfd0" text-anchor="middle" font-family="monospace">OFURO</text>
+            <!-- Vanity -->
+            <rect x="150" y="160" width="40" height="22" fill="rgba(42,40,32,0.3)" stroke="#2a2820" stroke-width="0.5"/>
+            <text x="170" y="173" font-size="5.5" fill="#2a2820" text-anchor="middle" font-family="monospace">VANITY</text>
+          </svg>
+        </div>
+        <div class="card">
+          <h5>Material swatches</h5>
+          <div style="display: flex; flex-wrap: wrap; gap: 5px; margin-top: 8px;">
+            <div class="mat-chip"><div class="mat-dot-sm" style="background:#1a1814;"></div>Bazan đen</div>
+            <div class="mat-chip"><div class="mat-dot-sm" style="background:#3a3028;"></div>Walnut</div>
+            <div class="mat-chip"><div class="mat-dot-sm" style="background:#2a2820;"></div>Sắt đen</div>
+            <div class="mat-chip"><div class="mat-dot-sm" style="background:#c8a870;"></div>Bronze</div>
+            <div class="mat-chip"><div class="mat-dot-sm" style="background:#e8dfd0;"></div>Plaster</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- COL 2: SPECS -->
+      <div class="room-col">
+        <div class="spec-row">
+          <div class="spec-icon">S</div>
+          <div>
+            <div class="spec-title">Shadow Play — Trò chơi bóng đổ</div>
+            <div class="spec-desc">Ánh nắng chiều xiên gắt từ hướng Tây đâm chéo qua hệ lam đứng Walnut tối, vẽ trò chơi bóng đổ sọc (shadow play) sắc lẹm trên nền đá Bazan đen khò thô. Mỗi giờ trong ngày tạo ra một bức tranh khác nhau.</div>
+          </div>
+        </div>
+        <div class="spec-row">
+          <div class="spec-icon">P</div>
+          <div>
+            <div class="spec-title">Panorama Framing — Khung hình đô thị</div>
+            <div class="spec-desc">Góc đắt giá nhất — bo tròn ôm trọn ngã tư Lê Lai & Nguyễn Văn Tráng. Lam gỗ đứng đóng khung nhịp chuyển động đô thị, biến tầm nhìn thành tác phẩm điện ảnh.</div>
+          </div>
+        </div>
+        <div class="spec-row">
+          <div class="spec-icon">B</div>
+          <div>
+            <div class="spec-title">Bazan Stone — Đá bazan chẻ thô</div>
+            <div class="spec-desc">Đá bazan chẻ thô nguyên tảng đẽo tay. Phủ nano sealer penetrating định kỳ (lớp phủ mờ 100%) giữ màu charcoal tự nhiên, chống efflorescence (vệt ố trắng từ canxi).</div>
+          </div>
+        </div>
+        <div class="spec-row">
+          <div class="spec-icon">A</div>
+          <div>
+            <div class="spec-title">Tham chiếu Aman Tokyo</div>
+            <div class="spec-desc">Nổi trên tầng cao. Minimalist skyscraper. Washi paper Lantern 30m. Low-iron glass, fluted glass screens. Warm 2700K–3000K cove lighting. Được thiết kế bởi Kerry Hill Architects.</div>
+          </div>
+        </div>
+        <div class="spec-row">
+          <div class="spec-icon">L</div>
+          <div>
+            <div class="spec-title">Ánh sáng</div>
+            <div class="light-row"><span class="light-dot light-warm"></span><span class="light-desc">Warm tungsten 2800K (buổi tối)</span></div>
+            <div class="light-row"><span class="light-dot light-neutral"></span><span class="light-desc">Daylight mềm xiên qua lam gỗ</span></div>
+            <div class="light-row"><span class="light-dot light-cool"></span><span class="light-desc">Cool accent cho texture đá</span></div>
+          </div>
+        </div>
+        <div class="spec-row">
+          <div class="spec-icon">T</div>
+          <div>
+            <div class="spec-title">Kỹ thuật đặc biệt</div>
+            <div class="spec-desc">STC ≥ 50 vách cách âm giếng kỹ thuật. Kính hộp chân không Low-E Argon 2 lớp cho view panorama. Độ ẩm phòng tắm kiểm soát để tránh ảnh hưởng đến đá bazan.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- COL 3: DETAIL TABLE + MOOD -->
+      <div class="room-col">
+        <div class="card">
+          <h5>Thông số chi tiết</h5>
+          <div class="table-wrapper" style="margin-top: 8px; font-size: 11px;">
+            <table>
+              <tbody>
+                <tr><td class="td-label" style="white-space:nowrap;">Hướng nắng</td><td>Tây Nam — chiều xiên gắt</td></tr>
+                <tr><td class="td-label">View</td><td>Panorama đô thị mở rộng</td></tr>
+                <tr><td class="td-label">Cách âm</td><td>STC ≥ 50</td></tr>
+                <tr><td class="td-label">Đặc điểm</td><td>Shadow play, Bazan, Lam đứng</td></tr>
+                <tr><td class="td-label">Ánh sáng</td><td>2800K warm + cool accent</td></tr>
+                <tr><td class="td-label">Phần cứng</td><td>Blackened steel · Sắt đen</td></tr>
+                <tr><td class="td-label">Xử lý đặc biệt</td><td>Nano sealer Bazan chống ố</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <div class="card">
+          <h5>Mood từ khóa</h5>
+          <div class="mood-chips" style="margin-top: 8px;">
+            <span class="mood-chip" style="border-color: #5a7a6a; color: #5a7a6a;">dramatic</span>
+            <span class="mood-chip" style="border-color: #5a7a6a; color: #5a7a6a;">cinematic</span>
+            <span class="mood-chip" style="border-color: #5a7a6a; color: #5a7a6a;">urban</span>
+            <span class="mood-chip" style="border-color: #5a7a6a; color: #5a7a6a;">tactile</span>
+            <span class="mood-chip" style="border-color: #5a7a6a; color: #5a7a6a;">grounded</span>
+          </div>
+        </div>
+        <div class="card">
+          <h5>Amenities</h5>
+          <div class="amenity-chips">
+            <div class="amenity-chip">Ofuro</div>
+            <div class="amenity-chip">Bazan feature</div>
+            <div class="amenity-chip">Panorama</div>
+            <div class="amenity-chip">Shadow play</div>
+            <div class="amenity-chip">Wellness</div>
+          </div>
+        </div>
+        <div class="card" style="background: rgba(90,122,106,0.05); border-color: #5a7a6a;">
+          <h5 style="color: #5a7a6a;">Lý do chọn góc này</h5>
+          <p style="font-size: 11px; margin-top: 6px;">Góc đắt giá nhất dành cho cảm xúc mạnh mẽ nhất. Nắng chiều Tây gắt không phải bất lợi mà là nguyên liệu thiết kế. Shadow play là tác phẩm nghệ thuật sống.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════ -->
+  <!-- SLIDE 08 — ROOM: KYOTO VIBE                 -->
+  <!-- ═══════════════════════════════════════════ -->
+  <div class="slide room-slide room-kyoto" data-num="08">
+    <div class="room-header">
+      <div>
+        <h3>Loại phòng 02 · Zen Stillness</h3>
+        <h1 style="font-size: 42px;">Kyoto Vibe</h1>
+        <p class="room-tagline">"Tĩnh lặng sâu sắc"</p>
+      </div>
+      <div class="room-vibe-tag">Mặt Nam · Hinoki · Washi · Tatami</div>
+    </div>
+    <div class="room-body">
+      <div class="room-col">
+        <div class="floor-svg-wrap">
+          <div class="floor-svg-label">SƠ ĐỒ MẶT BẰNG</div>
+          <svg viewBox="0 0 260 200" style="width: 100%;">
+            <rect x="5" y="5" width="250" height="190" fill="none" stroke="#c8bfb0" stroke-width="2"/>
+            <!-- Washi Shoji South -->
+            <rect x="5" y="5" width="250" height="40" fill="rgba(232,223,208,0.75)" stroke="#e8dfd0" stroke-width="1.5"/>
+            <line x1="5" y1="17" x2="255" y2="17" stroke="#d8d0c4" stroke-width="0.5"/>
+            <line x1="5" y1="30" x2="255" y2="30" stroke="#d8d0c4" stroke-width="0.5"/>
+            <line x1="55" y1="5" x2="55" y2="45" stroke="#d8d0c4" stroke-width="0.5"/>
+            <line x1="105" y1="5" x2="105" y2="45" stroke="#d8d0c4" stroke-width="0.5"/>
+            <line x1="155" y1="5" x2="155" y2="45" stroke="#d8d0c4" stroke-width="0.5"/>
+            <line x1="205" y1="5" x2="205" y2="45" stroke="#d8d0c4" stroke-width="0.5"/>
+            <text x="130" y="28" font-size="6" fill="#9a7060" text-anchor="middle" font-family="monospace">WASHI SHOJI — SƯƠNG MÙ DỊU NHẸ</text>
+            <!-- South sun -->
+            <path d="M 130 0 L 130 7 M 125 3 L 130 7 L 135 3" stroke="#d4a030" stroke-width="1.2" fill="none"/>
+            <text x="130" y="52" font-size="5" fill="#d4a030" text-anchor="middle" font-family="monospace">☀ MẶT NAM</text>
+            <!-- Light diffusion waves -->
+            <path d="M 60 45 Q 70 55 60 65 Q 50 75 60 85" stroke="#d4a030" stroke-width="0.5" fill="none" opacity="0.4"/>
+            <path d="M 130 45 Q 140 55 130 65 Q 120 75 130 85" stroke="#d4a030" stroke-width="0.5" fill="none" opacity="0.4"/>
+            <path d="M 200 45 Q 210 55 200 65 Q 190 75 200 85" stroke="#d4a030" stroke-width="0.5" fill="none" opacity="0.4"/>
+            <!-- Wardrobe recessed -->
+            <rect x="5" y="50" width="55" height="70" fill="rgba(58,48,40,0.2)" stroke="#5a4030" stroke-width="0.5"/>
+            <text x="32" y="87" font-size="5.5" fill="#5a4030" text-anchor="middle" font-family="monospace">WALNUT</text>
+            <text x="32" y="95" font-size="5" fill="#5a4030" text-anchor="middle" font-family="monospace">ÂM TƯỜNG</text>
+            <!-- Hinoki Ofuro -->
+            <rect x="65" y="50" width="95" height="65" fill="rgba(212,168,112,0.3)" stroke="#d4a870" stroke-width="1.5"/>
+            <text x="112" y="78" font-size="6" fill="#9a6030" text-anchor="middle" font-family="monospace">HINOKI OFURO</text>
+            <text x="112" y="87" font-size="5" fill="#9a6030" text-anchor="middle" font-family="monospace">nguyên khối · tinh dầu</text>
+            <!-- Hinoki fragrance waves -->
+            <path d="M 75 50 Q 85 40 75 30" stroke="#d4a870" stroke-width="0.5" fill="none" opacity="0.5"/>
+            <path d="M 90 50 Q 100 40 90 30" stroke="#d4a870" stroke-width="0.5" fill="none" opacity="0.5"/>
+            <path d="M 105 50 Q 115 40 105 30" stroke="#d4a870" stroke-width="0.5" fill="none" opacity="0.5"/>
+            <!-- Tatami zone -->
+            <rect x="65" y="120" width="95" height="55" fill="rgba(138,122,80,0.25)" stroke="#8a7a50" stroke-width="1" stroke-dasharray="4,2"/>
+            <text x="112" y="144" font-size="6" fill="#6a5a30" text-anchor="middle" font-family="monospace">TATAMI ZONE</text>
+            <text x="112" y="154" font-size="5" fill="#6a5a30" text-anchor="middle" font-family="monospace">thiền định · ngồi trệt</text>
+            <!-- Study / meditation -->
+            <rect x="165" y="50" width="90" height="125" fill="rgba(232,223,208,0.2)" stroke="#d8d0c4" stroke-width="0.5"/>
+            <text x="210" y="100" font-size="5.5" fill="#8a7060" text-anchor="middle" font-family="monospace">KHU VỰC</text>
+            <text x="210" y="109" font-size="5.5" fill="#8a7060" text-anchor="middle" font-family="monospace">HỌC / THIỀN</text>
+            <!-- Low table -->
+            <rect x="185" y="115" width="50" height="20" fill="rgba(138,122,80,0.2)" stroke="#8a7a50" stroke-width="0.5"/>
+            <text x="210" y="127" font-size="5" fill="#6a5a30" text-anchor="middle" font-family="monospace">bàn thấp</text>
+          </svg>
+        </div>
+        <div class="card">
+          <h5>Material swatches</h5>
+          <div style="display: flex; flex-wrap: wrap; gap: 5px; margin-top: 8px;">
+            <div class="mat-chip"><div class="mat-dot-sm" style="background:#d4a870;"></div>Hinoki nguyên khối</div>
+            <div class="mat-chip"><div class="mat-dot-sm" style="background:#e8dfd0;"></div>Washi paper</div>
+            <div class="mat-chip"><div class="mat-dot-sm" style="background:#8a7a50;"></div>Tatami</div>
+            <div class="mat-chip"><div class="mat-dot-sm" style="background:#3a3028;"></div>Walnut âm</div>
+            <div class="mat-chip"><div class="mat-dot-sm" style="background:#c8a870;"></div>Bronze</div>
+          </div>
+        </div>
+      </div>
+      <div class="room-col">
+        <div class="spec-row">
+          <div class="spec-icon">W</div>
+          <div>
+            <div class="spec-title">Washi Light Diffusion — Tán xạ ánh sáng</div>
+            <div class="spec-desc">Cấu trúc xơ của Washi hoạt động như thấu kính phân kỳ, tán xạ ánh sáng thành "lớp sương mù dịu nhẹ" — tôn vinh sớ gỗ Hinoki sáng màu. Ép gia nhiệt giữa 2 lớp kính cường lực siêu trong (ultra-clear) để bảo tồn hiệu ứng quang học + độ bền vĩnh cửu.</div>
+          </div>
+        </div>
+        <div class="spec-row">
+          <div class="spec-icon">H</div>
+          <div>
+            <div class="spec-title">Hinoki Ofuro Ritual — Nghi thức tắm trị liệu</div>
+            <div class="spec-desc">Bồn tắm gỗ bách Hinoki nguyên khối. Tinh dầu đặc hữu trị liệu khi gặp nước nóng. Nghiêm cấm tuyệt đối Clo/Javel trong housekeeping — sẽ triệt tiêu tuyến tinh dầu và tẩy trắng gỗ. Rãnh thu nước sàn phải là rãnh giấu (invisible slot drain).</div>
+          </div>
+        </div>
+        <div class="spec-row">
+          <div class="spec-icon">T</div>
+          <div>
+            <div class="spec-title">Tatami Meditation Zone — Khu vực thiền định</div>
+            <div class="spec-desc">Khu vực ngồi trệt với chiếu Tatami thủ công. Bàn thấp truyền thống, gối ngồi. Không gian chuyển từ ngủ nghỉ sang thiền định không cần thay đổi vật lý — chỉ cần thay đổi tư thế.</div>
+          </div>
+        </div>
+        <div class="spec-row">
+          <div class="spec-icon">K</div>
+          <div>
+            <div class="spec-title">Kampo Wellness — Trị liệu bằng thảo dược</div>
+            <div class="spec-desc">Spa menu tích hợp thảo dược Kampo theo mùa. Mỗi spa journey bắt đầu bằng foot bath với thảo dược Kampo + muối biển khoáng, và breathing ritual với dầu camphor tree oil. Misogi purification ritual thanh tẩy trước mọi hành trình tâm linh.</div>
+          </div>
+        </div>
+        <div class="spec-row">
+          <div class="spec-icon">L</div>
+          <div>
+            <div class="spec-title">Ánh sáng</div>
+            <div class="light-row"><span class="light-dot light-warm"></span><span class="light-desc">Warm diffused 2700K (hào quang Washi)</span></div>
+            <div class="light-row"><span class="light-dot light-neutral"></span><span class="light-desc">Daylight tự nhiên qua Shoji</span></div>
+            <div class="light-row"><span class="light-dot light-warm"></span><span class="light-desc">Lantern sconces (camphor oil)</span></div>
+          </div>
+        </div>
+      </div>
+      <div class="room-col">
+        <div class="card">
+          <h5>Thông số chi tiết</h5>
+          <div class="table-wrapper" style="margin-top: 8px; font-size: 11px;">
+            <table>
+              <tbody>
+                <tr><td class="td-label">Hướng nắng</td><td>Nam — bức xạ gay gắt</td></tr>
+                <tr><td class="td-label">View</td><td>Công viên 23/9 (xa)</td></tr>
+                <tr><td class="td-label">Cách âm</td><td>STC ≥ 45 + sound-absorbing</td></tr>
+                <tr><td class="td-label">Đặc điểm</td><td>Washi Shoji, Hinoki, Tatami</td></tr>
+                <tr><td class="td-label">Ánh sáng</td><td>2700K diffused + lantern</td></tr>
+                <tr><td class="td-label">Phần cứng</td><td>Brushed bronze</td></tr>
+                <tr><td class="td-label">Xử lý đặc biệt</td><td>Không Clo/Javel (bảo tồn Hinoki)</td></tr>
+                <tr><td class="td-label">Kampo</td><td>Foot bath theo mùa + dầu camphor</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <div class="card">
+          <h5>Mood từ khóa</h5>
+          <div class="mood-chips" style="margin-top: 8px;">
+            <span class="mood-chip" style="border-color: #9a7060; color: #9a7060;">serene</span>
+            <span class="mood-chip" style="border-color: #9a7060; color: #9a7060;">contemplative</span>
+            <span class="mood-chip" style="border-color: #9a7060; color: #9a7060;">healing</span>
+            <span class="mood-chip" style="border-color: #9a7060; color: #9a7060;">purifying</span>
+            <span class="mood-chip" style="border-color: #9a7060; color: #9a7060;">meditative</span>
+          </div>
+        </div>
+        <div class="card">
+          <h5>Amenities</h5>
+          <div class="amenity-chips">
+            <div class="amenity-chip">Ofuro Hinoki</div>
+            <div class="amenity-chip">Tatami zone</div>
+            <div class="amenity-chip">Washi Shoji</div>
+            <div class="amenity-chip">Kampo herbs</div>
+            <div class="amenity-chip">Misogi ritual</div>
+            <div class="amenity-chip">Garden view</div>
+          </div>
+        </div>
+        <div class="card" style="background: rgba(154,112,96,0.05); border-color: #9a7060;">
+          <h5 style="color: #9a7060;">Lý do chọn góc này</h5>
+          <p style="font-size: 11px; margin-top: 6px;">Ánh nắng Nam gay gắt không phải bất lợi — Washi Shoji biến nó thành "lớp sương mù dịu nhẹ". Nắng trở thành nguyên liệu thiết kế, tôn vinh sớ gỗ Hinoki.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════ -->
+  <!-- SLIDE 09 — ROOM: NEW YORK VIBE              -->
+  <!-- ═══════════════════════════════════════════ -->
+  <div class="slide room-slide room-newyork" data-num="09">
+    <div class="room-header">
+      <div>
+        <h3>Loại phòng 03 · Residence Sanctuary</h3>
+        <h1 style="font-size: 42px;">New York Vibe</h1>
+        <p class="room-tagline">"Kén trú ẩn trưởng thành"</p>
+      </div>
+      <div class="room-vibe-tag">Tây Bắc · Thư viện · STC>55</div>
+    </div>
+    <div class="room-body">
+      <div class="room-col">
+        <div class="floor-svg-wrap">
+          <div class="floor-svg-label">SƠ ĐỒ MẶT BẰNG</div>
+          <svg viewBox="0 0 260 200" style="width: 100%;">
+            <rect x="5" y="5" width="250" height="190" fill="none" stroke="#c8bfb0" stroke-width="2"/>
+            <!-- Library wall full height -->
+            <rect x="5" y="5" width="80" height="155" fill="rgba(42,32,24,0.55)" stroke="#2a2018" stroke-width="1"/>
+            <!-- Book spines -->
+            <rect x="9" y="9" width="9" height="22" fill="rgba(74,48,32,0.7)" stroke="#3a2820" stroke-width="0.3"/>
+            <rect x="20" y="11" width="9" height="20" fill="rgba(90,64,44,0.6)" stroke="#3a2820" stroke-width="0.3"/>
+            <rect x="31" y="8" width="9" height="23" fill="rgba(60,40,28,0.7)" stroke="#3a2820" stroke-width="0.3"/>
+            <rect x="42" y="10" width="9" height="21" fill="rgba(80,56,40,0.6)" stroke="#3a2820" stroke-width="0.3"/>
+            <rect x="53" y="9" width="9" height="22" fill="rgba(100,72,48,0.6)" stroke="#3a2820" stroke-width="0.3"/>
+            <rect x="64" y="11" width="9" height="20" fill="rgba(70,48,32,0.7)" stroke="#3a2820" stroke-width="0.3"/>
+            <rect x="9" y="35" width="9" height="22" fill="rgba(90,64,44,0.6)" stroke="#3a2820" stroke-width="0.3"/>
+            <rect x="20" y="37" width="9" height="20" fill="rgba(60,40,28,0.7)" stroke="#3a2820" stroke-width="0.3"/>
+            <rect x="31" y="34" width="9" height="23" fill="rgba(80,56,40,0.6)" stroke="#3a2820" stroke-width="0.3"/>
+            <rect x="42" y="36" width="9" height="21" fill="rgba(70,48,32,0.7)" stroke="#3a2820" stroke-width="0.3"/>
+            <rect x="53" y="35" width="9" height="22" fill="rgba(90,64,44,0.6)" stroke="#3a2820" stroke-width="0.3"/>
+            <rect x="64" y="37" width="9" height="20" fill="rgba(100,72,48,0.6)" stroke="#3a2820" stroke-width="0.3"/>
+            <text x="45" y="105" font-size="6" fill="#c0a878" text-anchor="middle" font-family="monospace" transform="rotate(-90, 45, 105)">THƯ VIỆN KỊCH TRẦN</text>
+            <!-- STC indicator -->
+            <line x1="85" y1="5" x2="85" y2="160" stroke="#9a6a20" stroke-width="0.8" stroke-dasharray="2,1.5"/>
+            <text x="88" y="88" font-size="5" fill="#9a6a20" font-family="monospace">STC&gt;55</text>
+            <!-- Acoustic layers -->
+            <text x="88" y="95" font-size="4.5" fill="#9a6a20" font-family="monospace">double-</text>
+            <text x="88" y="102" font-size="4.5" fill="#9a6a20" font-family="monospace">stud wall</text>
+            <!-- Study foyer (linear) -->
+            <rect x="85" y="5" width="22" height="155" fill="rgba(232,223,208,0.2)" stroke="#d8d0c4" stroke-width="0.5"/>
+            <text x="96" y="88" font-size="4.5" fill="#8a7060" text-anchor="middle" font-family="monospace" transform="rotate(-90, 96, 88)">SẢNH TIỀN</text>
+            <!-- Bedroom -->
+            <rect x="107" y="5" width="95" height="95" fill="rgba(58,48,40,0.2)" stroke="#3a3028" stroke-width="0.5"/>
+            <text x="155" y="55" font-size="6" fill="#3a3028" text-anchor="middle" font-family="monospace">PHÒNG NGỦ</text>
+            <!-- North window -->
+            <rect x="107" y="5" width="95" height="22" fill="rgba(200,220,240,0.2)" stroke="#a0b8c8" stroke-width="0.5"/>
+            <text x="155" y="19" font-size="5" fill="#8090a0" text-anchor="middle" font-family="monospace">◄ HƯỚNG BẮC</text>
+            <!-- Grazing light from left shelf edge -->
+            <line x1="107" y1="5" x2="107" y2="100" stroke="#d4a030" stroke-width="0.8" stroke-dasharray="2,1.5"/>
+            <text x="107" y="105" font-size="4.5" fill="#d4a030" text-anchor="middle" font-family="monospace" transform="rotate(-90, 107, 105)">GRAZING</text>
+            <!-- Walk-in closet -->
+            <rect x="107" y="105" width="55" height="55" fill="rgba(232,223,208,0.2)" stroke="#c8bfb0" stroke-width="0.5"/>
+            <text x="135" y="135" font-size="5.5" fill="#8a7060" text-anchor="middle" font-family="monospace">WALK-IN</text>
+            <!-- Bath -->
+            <rect x="167" y="105" width="88" height="55" fill="rgba(58,56,48,0.2)" stroke="#3a3830" stroke-width="0.5"/>
+            <text x="211" y="130" font-size="5.5" fill="#3a3830" text-anchor="middle" font-family="monospace">PHÒNG TẮM</text>
+            <text x="211" y="140" font-size="5" fill="#3a3830" text-anchor="middle" font-family="monospace">honed limestone</text>
+          </svg>
+        </div>
+        <div class="card">
+          <h5>Material swatches</h5>
+          <div style="display: flex; flex-wrap: wrap; gap: 5px; margin-top: 8px;">
+            <div class="mat-chip"><div class="mat-dot-sm" style="background:#2a2018;"></div>Dark walnut</div>
+            <div class="mat-chip"><div class="mat-dot-sm" style="background:#4a3020;"></div>Da sậm</div>
+            <div class="mat-chip"><div class="mat-dot-sm" style="background:#e8dfd0;"></div>Level 5 plaster</div>
+            <div class="mat-chip"><div class="mat-dot-sm" style="background:#3a3830;"></div>Honed limestone</div>
+            <div class="mat-chip"><div class="mat-dot-sm" style="background:#c8a870;"></div>Bronze</div>
+          </div>
+        </div>
+      </div>
+      <div class="room-col">
+        <div class="spec-row">
+          <div class="spec-icon">L</div>
+          <div>
+            <div class="spec-title">Library Wall — Tủ thư viện kịch trần</div>
+            <div class="spec-desc">Tủ sách kịch trần bọc da sậm. Khung giường + đầu giường bọc da cùng tông. Tủ sách đóng vai trò bẫy tiêu âm dải rộng (broadband acoustic trap) — triệt âm hành lang hiệu quả. Ánh sáng hắt trượt (grazing light) là là từ khe rèm và kệ sách.</div>
+          </div>
+        </div>
+        <div class="spec-row">
+          <div class="spec-icon">A</div>
+          <div>
+            <div class="spec-title">Acoustic STC > 55 — Vách đệm kép</div>
+            <div class="spec-desc">Vách tiếp giáp lõi thang bộ thoát hiểm: hai lớp khung xương độc lập không chạm nhau, chèn bông khoáng Rockwool tỷ trọng cao + màng cao su non giảm chấn. Kết quả: hệ số STC > 55 = sự tĩnh lặng tuyệt đối.</div>
+          </div>
+        </div>
+        <div class="spec-row">
+          <div class="spec-icon">F</div>
+          <div>
+            <div class="spec-title">Linear Foyer — Sảnh tiền dài</div>
+            <div class="spec-desc">Hành lang dài đệm tâm lý trước khi vào phòng ngủ. Cấu trúc linear thuận lợi phân lớp không gian. Tạo cảm giác penthouse riêng tư — một thế giới tách biệt với mọi thứ bên ngoài.</div>
+          </div>
+        </div>
+        <div class="spec-row">
+          <div class="spec-icon">P</div>
+          <div>
+            <div class="spec-title">Level 5 Plaster Finish — Độ phẳng cao nhất</div>
+            <div class="spec-desc">Ánh sáng hắt trượt (grazing light) rất dễ lộ khuyết điểm gồ ghề của tường. Bắt buộc sơn bả plaster đạt tiêu chuẩn Level 5 Finish — độ phẳng cao nhất theo tiêu chuẩn công nghiệp. Hệ tủ sách mộng gỗ phải tính toán dung sai co ngót cơ học.</div>
+          </div>
+        </div>
+        <div class="spec-row">
+          <div class="spec-icon">L</div>
+          <div>
+            <div class="spec-title">Ánh sáng</div>
+            <div class="light-row"><span class="light-dot light-warm"></span><span class="light-desc">Warm 2600K grazing từ kệ sách</span></div>
+            <div class="light-row"><span class="light-dot light-warm"></span><span class="light-desc">3200K cove sau thư viện</span></div>
+            <div class="light-row"><span class="light-dot light-neutral"></span><span class="light-desc">Daylight gián tiếp phía Bắc</span></div>
+          </div>
+        </div>
+      </div>
+      <div class="room-col">
+        <div class="card">
+          <h5>Thông số chi tiết</h5>
+          <div class="table-wrapper" style="margin-top: 8px; font-size: 11px;">
+            <table>
+              <tbody>
+                <tr><td class="td-label">Hướng nắng</td><td>Tây Bắc — nắng hông nhẹ</td></tr>
+                <tr><td class="td-label">View</td><td>Nguyễn Văn Tráng (hông)</td></tr>
+                <tr><td class="td-label">Cách âm</td><td>STC > 55 vách đệm kép</td></tr>
+                <tr><td class="td-label">Đặc điểm</td><td>Library wall, Linear foyer</td></tr>
+                <tr><td class="td-label">Ánh sáng</td><td>2600K grazing + 3200K cove</td></tr>
+                <tr><td class="td-label">Plaster</td><td>Level 5 Finish (cao nhất)</td></tr>
+                <tr><td class="td-label">Phần cứng</td><td>Brushed bronze</td></tr>
+                <tr><td class="td-label">Phòng tắm</td><td>Honed limestone</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <div class="card">
+          <h5>Mood từ khóa</h5>
+          <div class="mood-chips" style="margin-top: 8px;">
+            <span class="mood-chip" style="border-color: #7a6a58; color: #7a6a58;">masculine</span>
+            <span class="mood-chip" style="border-color: #7a6a58; color: #7a6a58;">intimate</span>
+            <span class="mood-chip" style="border-color: #7a6a58; color: #7a6a58;">scholarly</span>
+            <span class="mood-chip" style="border-color: #7a6a58; color: #7a6a58;">quiet</span>
+            <span class="mood-chip" style="border-color: #7a6a58; color: #7a6a58;">private</span>
+          </div>
+        </div>
+        <div class="card">
+          <h5>Amenities</h5>
+          <div class="amenity-chips">
+            <div class="amenity-chip">Library wall</div>
+            <div class="amenity-chip">Level 5 plaster</div>
+            <div class="amenity-chip">STC>55</div>
+            <div class="amenity-chip">Linear foyer</div>
+            <div class="amenity-chip">Grazing light</div>
+            <div class="amenity-chip">Walk-in</div>
+          </div>
+        </div>
+        <div class="card" style="background: rgba(122,106,88,0.05); border-color: #7a6a58;">
+          <h5 style="color: #7a6a58;">Lý do chọn góc này</h5>
+          <p style="font-size: 11px; margin-top: 6px;">Cấu trúc linear dài thuận lợi phân lớp không gian. Hành lang dài tạo đệm tâm lý. Mỗi bước vào là một hành trình từ thế giới bên ngoài vào không gian riêng tư tuyệt đối.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════ -->
+  <!-- SLIDE 10 — ROOM: METROPOLE VIBE             -->
+  <!-- ═══════════════════════════════════════════ -->
+  <div class="slide room-slide room-metropole" data-num="10">
+    <div class="room-header">
+      <div>
+        <h3>Loại phòng 04 · Classic Refinement</h3>
+        <h1 style="font-size: 42px;">Metropole Vibe</h1>
+        <p class="room-tagline">"Thanh lịch vượt thời gian"</p>
+      </div>
+      <div class="room-vibe-tag">Đông Nam · Mây đan · Amber 2200K</div>
+    </div>
+    <div class="room-body">
+      <div class="room-col">
+        <div class="floor-svg-wrap">
+          <div class="floor-svg-label">SƠ ĐỒ MẶT BẰNG</div>
+          <svg viewBox="0 0 260 200" style="width: 100%;">
+            <rect x="5" y="5" width="250" height="190" fill="none" stroke="#c8bfb0" stroke-width="2"/>
+            <!-- Amber jewel box window -->
+            <rect x="5" y="5" width="250" height="38" fill="rgba(212,168,112,0.25)" stroke="#d4a870" stroke-width="1.5"/>
+            <!-- Rattan grid pattern -->
+            <line x1="30" y1="5" x2="30" y2="43" stroke="#8a7a60" stroke-width="0.6"/>
+            <line x1="55" y1="5" x2="55" y2="43" stroke="#8a7a60" stroke-width="0.6"/>
+            <line x1="80" y1="5" x2="80" y2="43" stroke="#8a7a60" stroke-width="0.6"/>
+            <line x1="105" y1="5" x2="105" y2="43" stroke="#8a7a60" stroke-width="0.6"/>
+            <line x1="130" y1="5" x2="130" y2="43" stroke="#8a7a60" stroke-width="0.6"/>
+            <line x1="155" y1="5" x2="155" y2="43" stroke="#8a7a60" stroke-width="0.6"/>
+            <line x1="180" y1="5" x2="180" y2="43" stroke="#8a7a60" stroke-width="0.6"/>
+            <line x1="205" y1="5" x2="205" y2="43" stroke="#8a7a60" stroke-width="0.6"/>
+            <line x1="230" y1="5" x2="230" y2="43" stroke="#8a7a60" stroke-width="0.6"/>
+            <line x1="5" y1="16" x2="255" y2="16" stroke="#8a7a60" stroke-width="0.6"/>
+            <line x1="5" y1="28" x2="255" y2="28" stroke="#8a7a60" stroke-width="0.6"/>
+            <text x="130" y="27" font-size="6" fill="#9a6820" text-anchor="middle" font-family="monospace">RATTAN SCREEN · AMBER 2200K</text>
+            <!-- Amber glow rays downward -->
+            <line x1="30" y1="43" x2="40" y2="85" stroke="#d4a030" stroke-width="0.4" opacity="0.5"/>
+            <line x1="65" y1="43" x2="75" y2="85" stroke="#d4a030" stroke-width="0.4" opacity="0.5"/>
+            <line x1="100" y1="43" x2="110" y2="85" stroke="#d4a030" stroke-width="0.4" opacity="0.5"/>
+            <line x1="130" y1="43" x2="140" y2="85" stroke="#d4a030" stroke-width="0.4" opacity="0.5"/>
+            <line x1="165" y1="43" x2="175" y2="85" stroke="#d4a030" stroke-width="0.4" opacity="0.5"/>
+            <line x1="200" y1="43" x2="210" y2="85" stroke="#d4a030" stroke-width="0.4" opacity="0.5"/>
+            <line x1="230" y1="43" x2="240" y2="85" stroke="#d4a030" stroke-width="0.4" opacity="0.5"/>
+            <text x="130" y="65" font-size="5" fill="#d4a030" text-anchor="middle" font-family="monospace" opacity="0.7">tia sáng amber</text>
+            <!-- Lounge corner -->
+            <rect x="5" y="48" width="120" height="70" fill="rgba(138,122,96,0.2)" stroke="#8a7a60" stroke-width="0.5"/>
+            <rect x="10" y="53" width="110" height="24" fill="rgba(160,144,120,0.3)" stroke="#8a7a60" stroke-width="0.5"/>
+            <text x="65" y="68" font-size="6" fill="#6a5a40" text-anchor="middle" font-family="monospace">LOUNGE / DAYBED</text>
+            <text x="65" y="77" font-size="5" fill="#6a5a40" text-anchor="middle" font-family="monospace">(mây đan)</text>
+            <!-- Rattan screen label -->
+            <rect x="10" y="82" width="110" height="32" fill="rgba(138,122,96,0.15)" stroke="#8a7a60" stroke-width="0.5" stroke-dasharray="3,2"/>
+            <text x="65" y="100" font-size="5.5" fill="#8a7a60" text-anchor="middle" font-family="monospace">VÁCH MÂY ĐAN</text>
+            <!-- Bed -->
+            <rect x="130" y="48" width="125" height="70" fill="rgba(58,48,40,0.2)" stroke="#3a3028" stroke-width="0.5"/>
+            <text x="192" y="87" font-size="6" fill="#3a3028" text-anchor="middle" font-family="monospace">GIƯỜNG</text>
+            <!-- Open bath (full width) -->
+            <rect x="5" y="123" width="250" height="62" fill="rgba(224,216,200,0.3)" stroke="#c0b8a8" stroke-width="1"/>
+            <!-- Marble pattern tiles -->
+            <rect x="10" y="128" width="48" height="52" fill="rgba(224,216,200,0.5)" stroke="#c0b8a8" stroke-width="0.3"/>
+            <rect x="62" y="128" width="48" height="52" fill="rgba(200,190,175,0.5)" stroke="#c0b8a8" stroke-width="0.3"/>
+            <rect x="114" y="128" width="48" height="52" fill="rgba(224,216,200,0.5)" stroke="#c0b8a8" stroke-width="0.3"/>
+            <rect x="166" y="128" width="48" height="52" fill="rgba(200,190,175,0.5)" stroke="#c0b8a8" stroke-width="0.3"/>
+            <rect x="207" y="128" width="43" height="52" fill="rgba(224,216,200,0.5)" stroke="#c0b8a8" stroke-width="0.3"/>
+            <text x="130" y="158" font-size="6" fill="#9a8a78" text-anchor="middle" font-family="monospace">PHÒNG TẮM MARBLE — OPEN TO ROOM</text>
+            <!-- Brass fixtures -->
+            <circle cx="175" cy="154" r="5" fill="rgba(200,169,112,0.6)" stroke="#c8a870" stroke-width="0.8"/>
+            <circle cx="190" cy="154" r="5" fill="rgba(200,169,112,0.6)" stroke="#c8a870" stroke-width="0.8"/>
+            <circle cx="205" cy="154" r="5" fill="rgba(200,169,112,0.6)" stroke="#c8a870" stroke-width="0.8"/>
+            <text x="195" y="172" font-size="5" fill="#c8a870" text-anchor="middle" font-family="monospace">brass</text>
+          </svg>
+        </div>
+        <div class="card">
+          <h5>Material swatches</h5>
+          <div style="display: flex; flex-wrap: wrap; gap: 5px; margin-top: 8px;">
+            <div class="mat-chip"><div class="mat-dot-sm" style="background:#d4a870;"></div>Amber 2200K</div>
+            <div class="mat-chip"><div class="mat-dot-sm" style="background:#8a7a60;"></div>Mây đan</div>
+            <div class="mat-chip"><div class="mat-dot-sm" style="background:#e0d8c8;"></div>Marble bóng</div>
+            <div class="mat-chip"><div class="mat-dot-sm" style="background:#3a3028;"></div>Walnut</div>
+            <div class="mat-chip"><div class="mat-dot-sm" style="background:#c8a870;"></div>Brass patina</div>
+          </div>
+        </div>
+      </div>
+      <div class="room-col">
+        <div class="spec-row">
+          <div class="spec-icon">J</div>
+          <div>
+            <div class="spec-title">Jewelry Box Effect — Hiệu ứng hộp trang sức</div>
+            <div class="spec-desc">Góc khuất trong, ít sáng trực tiếp, giáp lõi thang bộ thoát hiểm & giếng kỹ thuật. Khuyết điểm thiếu view biến thành lợi thế "ẩn náu nội tâm". Ánh sáng amber 2200K lọc qua mắt lưới mây đan tạo hiệu ứng như đèn ngủ vintage — ấm áp, lãng mạn, riêng tư.</div>
+          </div>
+        </div>
+        <div class="spec-row">
+          <div class="spec-icon">R</div>
+          <div>
+            <div class="spec-title">Rattan Indochine Screen — Vá nh mây Đông Dương</div>
+            <div class="spec-desc">Lưới mây đan đũa. Ép nhiệt một lớp màng polycarbonate trong suốt mỏng ở mặt sau tấm mây đan. Lớp màng này giúp sợi mây căng phẳng, chống chùng dao và nấm mốc trong khí hậu máy lạnh liên tục.</div>
+          </div>
+        </div>
+        <div class="spec-row">
+          <div class="spec-icon">C</div>
+          <div>
+            <div class="spec-title">Marble & Brass Détails — Chi tiết đá cẩm thạch & đồng thau</div>
+            <div class="spec-desc">Polished marble (không hone — giữ độ bóng để phản ánh amber light). Phần cứng đồng thau patina. Chi tiết bespoke: bản lề, tay nắm — kỹ thuật khóa mộng mộc cổ điển, không đinh vít.</div>
+          </div>
+        </div>
+        <div class="spec-row">
+          <div class="spec-icon">M</div>
+          <div>
+            <div class="spec-title">Indochine Malle — Phong cách hoài cổ Đông Dương</div>
+            <div class="spec-desc">Hoài niệm hoài cổ Đông Dương qua lưới mây đan đũa và ánh sáng amber 2200K. Không gian kéo chậm nhịp sống. Lãng mạn, tĩnh lặng, riêng tư tuyệt đối. Cảm giác như một chiếc hộp trang sức (jewelry box) ấm áp.</div>
+          </div>
+        </div>
+        <div class="spec-row">
+          <div class="spec-icon">L</div>
+          <div>
+            <div class="spec-title">Ánh sáng</div>
+            <div class="light-row"><span class="light-dot light-warm"></span><span class="light-desc">Amber 2200K xuyên qua mây đan</span></div>
+            <div class="light-row"><span class="light-dot light-warm"></span><span class="light-desc">Ấm như ánh nến (candlelight warmth)</span></div>
+            <div class="light-row"><span class="light-dot light-neutral"></span><span class="light-desc">Low-level indirect only</span></div>
+          </div>
+        </div>
+      </div>
+      <div class="room-col">
+        <div class="card">
+          <h5>Thông số chi tiết</h5>
+          <div class="table-wrapper" style="margin-top: 8px; font-size: 11px;">
+            <table>
+              <tbody>
+                <tr><td class="td-label">Hướng nắng</td><td>Đông Nam — ít sáng trực tiếp</td></tr>
+                <tr><td class="td-label">View</td><td>Ẩn náu nội tâm</td></tr>
+                <tr><td class="td-label">Cách âm</td><td>STC ≥ 50 + polycarbonate</td></tr>
+                <tr><td class="td-label">Đặc điểm</td><td>Rattan, Amber, Marble bóng</td></tr>
+                <tr><td class="td-label">Ánh sáng</td><td>2200K amber (ấm nhất)</td></tr>
+                <tr><td class="td-label">Phần cứng</td><td>Brass patina · Mộng móc</td></tr>
+                <tr><td class="td-label">Xử lý đặc biệt</td><td>Polycarbonate backing</td></tr>
+                <tr><td class="td-label">Phòng tắm</td><td>Marble mở (open to room)</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <div class="card">
+          <h5>Mood từ khóa</h5>
+          <div class="mood-chips" style="margin-top: 8px;">
+            <span class="mood-chip" style="border-color: #9a6a20; color: #9a6a20;">romantic</span>
+            <span class="mood-chip" style="border-color: #9a6a20; color: #9a6a20;">nostalgic</span>
+            <span class="mood-chip" style="border-color: #9a6a20; color: #9a6a20;">indochine</span>
+            <span class="mood-chip" style="border-color: #9a6a20; color: #9a6a20;">intimate</span>
+            <span class="mood-chip" style="border-color: #9a6a20; color: #9a6a20;">timeless</span>
+          </div>
+        </div>
+        <div class="card">
+          <h5>Amenities</h5>
+          <div class="amenity-chips">
+            <div class="amenity-chip">Rattan screen</div>
+            <div class="amenity-chip">Amber 2200K</div>
+            <div class="amenity-chip">Marble open bath</div>
+            <div class="amenity-chip">Jewelry box</div>
+            <div class="amenity-chip">Indochine</div>
+            <div class="amenity-chip">Daybed lounge</div>
+          </div>
+        </div>
+        <div class="card" style="background: rgba(154,106,32,0.05); border-color: #9a6a20;">
+          <h5 style="color: #9a6a20;">Lý do chọn góc này</h5>
+          <p style="font-size: 11px; margin-top: 6px;">Góc khuất nhất, ít sáng nhất. Khuyết điểm về tầm nhìn và ánh sáng trở thành lợi thế: "ẩn náu nội tâm". Sự yên tĩnh, mộc mạc của mây đan, gỗ óc chó ấm và ánh sáng amber lọc qua mắt lưới tạo thành một jewelry box lãng mạn.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════ -->
+  <!-- SLIDE 11 — TRIẾT LÝ OM SOLAVITA              -->
+  <!-- ═══════════════════════════════════════════ -->
+  <div class="slide" data-num="11">
+    <h3>Triết lý Cốt lõi · OM Solavita</h3>
+    <h2>5 Trụ cột Không thể Thỏa hiệp</h2>
+    <div class="rule-long"></div>
+    <p style="font-size: 13px; line-height: 1.7; color: var(--text-muted); max-width: 920px; margin-bottom: 20px;">
+      Để kiến tạo một không gian đạt chuẩn OM Solavita, toàn bộ quá trình thiết kế phải được chi phối bởi một <strong style="color: var(--text);">hệ tư tưởng vận hành trung tâm</strong>, thay vì một phong cách nội thất cụ thể. Sự xa xỉ không nằm ở việc chọn loại gỗ, kiểu dáng đèn chùm hay mẫu mã sofa, mà nằm ở <strong style="color: var(--text);">năm trụ cột triết lý</strong> không thể thỏa hiệp.
+    </p>
+    <div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; flex: 1; align-items: stretch;">
+      <div class="card" style="border-top: 2.5px solid var(--amber);">
+        <div class="card-num">TRỤ CỘT 01</div>
+        <h4 style="font-size: 15px;">Space Before Object</h4>
+        <p style="font-size: 9px; color: var(--amber); font-family: 'Space Mono', monospace; letter-spacing: 0.05em; margin-bottom: 8px;">KHÔNG GIAN ƯU TIÊN HƠN VẬT THỂ</p>
+        <p style="font-size: 11px; line-height: 1.55;">Trong môi trường đô thị dày đặc, khoảng không trống rỗng mới thực sự là tài sản quý giá nhất. Cấu trúc không gian phải luôn được giải phóng — nội thất được tiết chế tối đa để căn phòng có thể <strong style="color: var(--text);">"thở"</strong>.</p>
+      </div>
+      <div class="card" style="border-top: 2.5px solid var(--amber);">
+        <div class="card-num">TRỤ CỘT 02</div>
+        <h4 style="font-size: 15px;">Silence is Luxury</h4>
+        <p style="font-size: 9px; color: var(--amber); font-family: 'Space Mono', monospace; letter-spacing: 0.05em; margin-bottom: 8px;">SỰ TĨNH LẶNG TUYỆT ĐỐI</p>
+        <p style="font-size: 11px; line-height: 1.55;">Mọi tiếng ồn từ hành lang, hệ thống điều hòa hay dòng chảy của nước đều phải được triệt tiêu. Đưa hệ thống thính giác về trạng thái nghỉ ngơi với chỉ số <strong style="color: var(--text);">Noise Criteria (NC) ở mức cực thấp</strong>.</p>
+      </div>
+      <div class="card" style="border-top: 2.5px solid var(--amber);">
+        <div class="card-num">TRỤ CỘT 03</div>
+        <h4 style="font-size: 15px;">Invisible Service</h4>
+        <p style="font-size: 9px; color: var(--amber); font-family: 'Space Mono', monospace; letter-spacing: 0.05em; margin-bottom: 8px;">DỊCH VỤ VÔ HÌNH</p>
+        <p style="font-size: 11px; line-height: 1.55;">Hệ thống kỹ thuật và nhân sự phải hoạt động ở một tầng không gian hoàn toàn tách biệt. Khách hàng không bao giờ được nhìn thấy xe đẩy buồng phòng, khu vực tập kết rác hay nhân sự hối hả di chuyển.</p>
+      </div>
+      <div class="card" style="border-top: 2.5px solid var(--amber);">
+        <div class="card-num">TRỤ CỘT 04</div>
+        <h4 style="font-size: 15px;">Fewer, Bigger, Better</h4>
+        <p style="font-size: 9px; color: var(--amber); font-family: 'Space Mono', monospace; letter-spacing: 0.05em; margin-bottom: 8px;">ÍT NHƯNG CHẤT LƯỢNG VĨ MÔ</p>
+        <p style="font-size: 11px; line-height: 1.55;">Chiến lược <strong style="color: var(--text);">hy sinh số lượng phòng</strong> để tối đa hóa diện tích từng không gian lưu trú. Mang lại trải nghiệm chiều sâu thay vì chạy theo doanh thu phòng thông thường.</p>
+      </div>
+      <div class="card" style="border-top: 2.5px solid var(--amber);">
+        <div class="card-num">TRỤ CỘT 05</div>
+        <h4 style="font-size: 15px;">Journey, Not Stay</h4>
+        <p style="font-size: 9px; color: var(--amber); font-family: 'Space Mono', monospace; letter-spacing: 0.05em; margin-bottom: 8px;">HÀNH TRÌNH THAY VÌ LƯU TRÚ</p>
+        <p style="font-size: 11px; line-height: 1.55;">Khách hàng không đến chỉ để ngủ. Họ đến để sống trong không gian có cảm giác như một <strong style="color: var(--text);">dinh thự cá nhân</strong> được cá nhân hóa tinh tế — vượt xa mô hình khách sạn đại trà.</p>
+      </div>
+    </div>
+    <div class="card" style="margin-top: 16px; background: var(--surface2); border-color: var(--amber-mid);">
+      <p style="font-size: 12px; font-style: italic; color: var(--text-muted); line-height: 1.7; text-align: center;">
+        Việc tuân thủ nghiêm ngặt năm trụ cột này đảm bảo rằng, cho dù OM Solavita có mang một ngôn ngữ hình khối hay vật liệu khác biệt so với nguyên bản Aman, không gian vẫn toát lên một <strong style="color: var(--amber);">đẳng cấp xa xỉ mang tính chiều sâu không thể pha lẫn</strong>.
+      </p>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════ -->
+  <!-- SLIDE 12 — TIÊU CHUẨN KÍCH THƯỚC            -->
+  <!-- ═══════════════════════════════════════════ -->
+  <div class="slide" data-num="12">
+    <h3>Hình thái Hình học · OM Solavita</h3>
+    <h2>Tiêu chuẩn Kích thước Không gian</h2>
+    <div class="rule-long"></div>
+    <div class="table-wrapper" style="flex: 1; overflow-y: auto; margin-bottom: 12px;">
+      <table>
+        <thead>
+          <tr>
+            <th style="width: 18%;">Thành phần Không gian</th>
+            <th style="width: 41%;">Hạng phòng Deluxe<br><span style="font-weight: 300; color: var(--text-dim);">(tiêu chuẩn tối thiểu 45m²)</span></th>
+            <th>Hạng phòng Signature<br><span style="font-weight: 300; color: var(--text-dim);">(63 - 70m²)</span></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr class="section-header"><td colspan="3">GIƯỜNG NGỦ & VÙNG ĐỆM</td></tr>
+          <tr>
+            <td class="td-label">Kích thước Giường</td>
+            <td>180 × 200 cm (King size)</td>
+            <td>200 × 200 cm (Super King size)</td>
+          </tr>
+          <tr>
+            <td class="td-label">Hành lang Hai bên Giường</td>
+            <td>Tối thiểu 80 cm (lý tưởng 90 cm)</td>
+            <td>Tối thiểu 90 cm đến 100 cm</td>
+          </tr>
+          <tr>
+            <td class="td-label">Khoảng lùi Cuối giường</td>
+            <td>Từ 110 cm đến 120 cm</td>
+            <td>Từ 130 cm đến 150 cm</td>
+          </tr>
+          <tr class="section-header"><td colspan="3">LOUNGE & GIAO THÔNG</td></tr>
+          <tr>
+            <td class="td-label">Kích thước Sofa</td>
+            <td>180 cm đến 220 cm</td>
+            <td>Lớn hơn 220 cm (thiết kế tùy biến)</td>
+          </tr>
+          <tr>
+            <td class="td-label">Khoảng cách Sofa → Giường</td>
+            <td>Tối thiểu 120 cm (nghiêm cấm đặt sát giường)</td>
+            <td>Lớn hơn 120 cm, tạo vùng đệm rõ rệt</td>
+          </tr>
+          <tr>
+            <td class="td-label">Giao thông quanh Lounge</td>
+            <td>80 cm đến 100 cm</td>
+            <td>100 cm trở lên</td>
+          </tr>
+          <tr class="section-header"><td colspan="3">LƯU TRỮ</td></tr>
+          <tr>
+            <td class="td-label">Tủ Quần áo</td>
+            <td>Dài tối thiểu 2.0 m · Sâu 60 cm</td>
+            <td>Walk-in Closet (rộng 150-200 cm, lối đi 80-90 cm)</td>
+          </tr>
+          <tr class="section-header"><td colspan="3">PHÒNG TẮM</td></tr>
+          <tr>
+            <td class="td-label">Diện tích Phòng tắm</td>
+            <td>11 m² đến 12 m²</td>
+            <td>14 m² đến 18 m²</td>
+          </tr>
+          <tr>
+            <td class="td-label">Khu vực Tắm đứng (Shower)</td>
+            <td>120 × 100 cm</td>
+            <td>140 × 100 cm</td>
+          </tr>
+          <tr>
+            <td class="td-label">Độ dài Bàn Lavabo (Vanity)</td>
+            <td>120 cm đến 140 cm</td>
+            <td>160 cm đến 180 cm</td>
+          </tr>
+          <tr>
+            <td class="td-label">Quy chuẩn Bồn tắm (Bathtub)</td>
+            <td>Tích hợp trong cấu trúc, cách tường ≥ 30 cm</td>
+            <td>Bồn tắm độc lập (freestanding), cách kính 80-100 cm</td>
+          </tr>
+          <tr>
+            <td class="td-label">Phân khu Vệ sinh (WC)</td>
+            <td>Ngăn cách kín hoàn toàn, độc lập</td>
+            <td>Ngăn cách kín hoàn toàn, độc lập</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="grid-2">
+      <div class="card" style="background: rgba(154,111,10,0.04); border-color: var(--amber-mid);">
+        <h5 style="color: var(--amber);">⚠ Sai lầm phổ biến</h5>
+        <p style="font-size: 11px; line-height: 1.6; margin-top: 6px;">Bố trí khu vực ghế sofa nằm <strong style="color: var(--text);">dính liền vào đuôi giường</strong> nhằm tiết kiệm diện tích. Trong quy chuẩn OM Solavita, Lounge Area phải là một cấu trúc độc lập về mặt không gian.</p>
+        <p style="font-size: 11px; line-height: 1.6; margin-top: 6px;">Bồn tắm không bao giờ được <strong style="color: var(--text);">chèn ép vào một góc tường chết</strong>. Signature: bồn tắm độc lập phải là tác phẩm điêu khắc trung tâm.</p>
+      </div>
+      <div class="card" style="background: rgba(154,111,10,0.04); border-color: var(--amber-mid);">
+        <h5 style="color: var(--amber);">Hành lang chung</h5>
+        <p style="font-size: 11px; line-height: 1.6; margin-top: 6px;">Kích thước tiêu chuẩn phải đạt <strong style="color: var(--text);">1.6 m đến 1.8 m</strong>. Trường hợp vướng hệ kết cấu lõi, thu hẹp cục bộ ở mức <strong style="color: var(--text);">1.55 m</strong> có thể chấp nhận — nhưng phải bù đắp bằng ánh sáng hắt gián tiếp hoặc thay đổi sắc độ vật liệu để triệt tiêu cảm giác chật chội.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════ -->
+  <!-- SLIDE 13 — ROOM FLOW & SOFT DIVIDER          -->
+  <!-- ═══════════════════════════════════════════ -->
+  <div class="slide" data-num="13">
+    <h3>Kiến trúc Chuyển tiếp · Tuyến tính Trải nghiệm</h3>
+    <h2>Room Flow & Soft Divider</h2>
+    <div class="rule-long"></div>
+    <div class="grid-2-1" style="flex: 1;">
+      <!-- LEFT: Spatial flow SVG + text -->
+      <div style="display: flex; flex-direction: column; gap: 12px;">
+        <div class="card">
+          <h5>3.1 · Spatial Flow (Dòng chảy Không gian)</h5>
+          <p style="font-size: 11px; color: var(--text-muted); line-height: 1.6; margin-top: 6px;">Trải nghiệm xa xỉ không xuất hiện đột ngột mà phải được dẫn dắt qua quá trình cởi bỏ áp lực tâm lý. Sơ đồ chuỗi không gian yêu cầu một tuyến tính trải nghiệm chặt chẽ.</p>
+          <div style="display: flex; align-items: center; gap: 4px; margin: 14px 0 6px; font-size: 10px; color: var(--text);">
+            <span style="padding: 6px 10px; background: var(--surface2); border: 1px solid var(--border); border-radius: 2px; font-family: 'Space Mono', monospace;">Entry</span>
+            <span style="color: var(--amber);">→</span>
+            <span style="padding: 6px 10px; background: var(--surface2); border: 1px solid var(--border); border-radius: 2px; font-family: 'Space Mono', monospace;">Foyer</span>
+            <span style="color: var(--amber);">→</span>
+            <span style="padding: 6px 10px; background: var(--surface2); border: 1px solid var(--border); border-radius: 2px; font-family: 'Space Mono', monospace;">Bed</span>
+            <span style="color: var(--amber);">→</span>
+            <span style="padding: 6px 10px; background: var(--amber-glow2); border: 1px solid var(--amber); border-radius: 2px; font-family: 'Space Mono', monospace; color: var(--amber);">Soft Divider</span>
+            <span style="color: var(--amber);">→</span>
+            <span style="padding: 6px 10px; background: var(--surface2); border: 1px solid var(--border); border-radius: 2px; font-family: 'Space Mono', monospace;">Lounge</span>
+            <span style="color: var(--amber);">→</span>
+            <span style="padding: 6px 10px; background: var(--surface2); border: 1px solid var(--border); border-radius: 2px; font-family: 'Space Mono', monospace;">View</span>
+          </div>
+          <p style="font-size: 11px; color: var(--text-muted); line-height: 1.6;">Đi từ hành lang công cộng → ngưỡng cửa giấu kín → sảnh đệm giải tỏa áp lực → vùng ngủ yên tĩnh → vượt qua lớp vách louver gỗ → khu vực ghế dài ngắm cảnh. Tầm nhìn chính luôn hướng về phía có ánh sáng và thiên nhiên.</p>
+        </div>
+
+        <div class="card">
+          <h5>3.2 · Tích hợp Kết cấu & Soft Dividers</h5>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 8px;">
+            <div>
+              <h5 style="color: var(--amber); font-size: 9px;">NGUYÊN TẮC CỘT</h5>
+              <p style="font-size: 11px; line-height: 1.55;">Tuyệt đối không "né cột" bằng các góc tường thô kệch. <strong style="color: var(--text);">Cột kết cấu phải được chuyển hóa</strong> thành điểm nhấn thiết kế hữu cơ: ốp gỗ Walnut, bọc panel đá tự nhiên, hoặc neo giữ các vách lam gỗ.</p>
+            </div>
+            <div>
+              <h5 style="color: var(--amber); font-size: 9px;">SOFT DIVIDERS</h5>
+              <p style="font-size: 11px; line-height: 1.55;">Thay vì tường gạch truyền thống tạo cảm giác ngột ngạt, OM Solavita sử dụng: <strong style="color: var(--text);">hệ lam gỗ song song</strong>, kệ tivi mở hai mặt, hoặc vách thấp tích hợp ánh sáng gián tiếp — tạo ra các lớp lang (layers) chiều sâu.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="card" style="background: rgba(154,111,10,0.04); border-color: var(--amber-mid);">
+          <h5 style="color: var(--amber);">3.3 · "Linh hồn Sài Gòn" trong Kiến trúc Phân lớp</h5>
+          <p style="font-size: 11px; line-height: 1.6; margin-top: 6px;">Trình tự từ hành lang công cộng → sảnh đệm → vùng ngủ → vách louver → ghế dài ngắm cảnh thể hiện rõ nhất nguyên lý <strong style="color: var(--text);">không gian ưu tiên hơn đồ đạc</strong>. Các vách ngăn cứng được xóa bỏ, cho phép luồng không khí và ánh sáng tự nhiên lưu thông không giới hạn, đồng thời vẫn bảo chứng tính riêng tư cho từng khu vực chức năng.</p>
+        </div>
+      </div>
+
+      <!-- RIGHT: SVG minh họa tuyến tính -->
+      <div style="display: flex; flex-direction: column; gap: 8px;">
+        <div class="floor-svg-wrap" style="padding: 10px;">
+          <div class="floor-svg-label">SIGNATURE LAYOUT</div>
+          <svg viewBox="0 0 220 320" style="width: 100%;">
+            <!-- Outer walls -->
+            <rect x="10" y="10" width="200" height="300" fill="none" stroke="#c8bfb0" stroke-width="2"/>
+            <!-- Entry -->
+            <rect x="80" y="10" width="60" height="20" fill="rgba(154,111,10,0.15)" stroke="#9a6f0a" stroke-width="1.5"/>
+            <text x="110" y="24" font-size="7" fill="#9a6f0a" text-anchor="middle" font-family="monospace" font-weight="600">ENTRY</text>
+            <!-- Foyer -->
+            <rect x="60" y="30" width="100" height="32" fill="rgba(232,223,208,0.4)" stroke="#d8d0c4" stroke-width="1"/>
+            <text x="110" y="44" font-size="6.5" fill="#7a5e3a" text-anchor="middle" font-family="monospace">FOYER · SẢNH ĐỆM</text>
+            <text x="110" y="53" font-size="5" fill="#9a9080" text-anchor="middle" font-family="monospace">giải tỏa áp lực</text>
+            <!-- Bed -->
+            <rect x="20" y="65" width="180" height="60" fill="rgba(58,48,40,0.2)" stroke="#3a3028" stroke-width="1"/>
+            <rect x="30" y="70" width="160" height="48" fill="rgba(58,48,40,0.15)" stroke="#3a3028" stroke-width="0.5"/>
+            <text x="110" y="100" font-size="6.5" fill="#3a3028" text-anchor="middle" font-family="monospace">BED · GIƯỜNG NGỦ</text>
+            <!-- Soft Divider (lam gỗ) -->
+            <g>
+              <line x1="60" y1="128" x2="60" y2="155" stroke="#9a6f0a" stroke-width="2"/>
+              <line x1="70" y1="128" x2="70" y2="155" stroke="#9a6f0a" stroke-width="2"/>
+              <line x1="80" y1="128" x2="80" y2="155" stroke="#9a6f0a" stroke-width="2"/>
+              <line x1="90" y1="128" x2="90" y2="155" stroke="#9a6f0a" stroke-width="2"/>
+              <line x1="100" y1="128" x2="100" y2="155" stroke="#9a6f0a" stroke-width="2"/>
+              <line x1="110" y1="128" x2="110" y2="155" stroke="#9a6f0a" stroke-width="2"/>
+              <line x1="120" y1="128" x2="120" y2="155" stroke="#9a6f0a" stroke-width="2"/>
+              <line x1="130" y1="128" x2="130" y2="155" stroke="#9a6f0a" stroke-width="2"/>
+              <line x1="140" y1="128" x2="140" y2="155" stroke="#9a6f0a" stroke-width="2"/>
+              <line x1="150" y1="128" x2="150" y2="155" stroke="#9a6f0a" stroke-width="2"/>
+              <line x1="160" y1="128" x2="160" y2="155" stroke="#9a6f0a" stroke-width="2"/>
+            </g>
+            <text x="110" y="148" font-size="6" fill="#9a6f0a" text-anchor="middle" font-family="monospace" font-weight="600">SOFT DIVIDER · LÂM GỖ</text>
+            <!-- Lounge -->
+            <rect x="20" y="158" width="180" height="55" fill="rgba(138,122,96,0.15)" stroke="#8a7a60" stroke-width="1"/>
+            <text x="110" y="185" font-size="6.5" fill="#7a5e3a" text-anchor="middle" font-family="monospace">LOUNGE · GHẾ DÀI NGẮM CẢNH</text>
+            <text x="110" y="195" font-size="5" fill="#9a9080" text-anchor="middle" font-family="monospace">vùng đệm ≥ 120cm</text>
+            <!-- View / Panorama window -->
+            <rect x="10" y="215" width="200" height="35" fill="rgba(154,200,220,0.2)" stroke="#7aafd0" stroke-width="1.5"/>
+            <text x="110" y="234" font-size="7" fill="#5a7a8a" text-anchor="middle" font-family="monospace" font-weight="600">VIEW · TẦM NHÌN</text>
+            <text x="110" y="244" font-size="5.5" fill="#5a7a8a" text-anchor="middle" font-family="monospace">toàn cảnh · ánh sáng tự nhiên</text>
+            <!-- Side: Walk-in closet (hidden) -->
+            <rect x="10" y="250" width="60" height="55" fill="rgba(58,56,48,0.15)" stroke="#3a3830" stroke-width="0.5" stroke-dasharray="2,2"/>
+            <text x="40" y="280" font-size="5" fill="#3a3830" text-anchor="middle" font-family="monospace">WALK-IN</text>
+            <text x="40" y="288" font-size="4.5" fill="#3a3830" text-anchor="middle" font-family="monospace">CL</text>
+            <!-- Side: Bathroom (hidden) -->
+            <rect x="75" y="250" width="135" height="55" fill="rgba(58,56,48,0.15)" stroke="#3a3830" stroke-width="0.5" stroke-dasharray="2,2"/>
+            <text x="142" y="278" font-size="5.5" fill="#3a3830" text-anchor="middle" font-family="monospace">BATHROOM · ẨN KHUẤT</text>
+            <text x="142" y="288" font-size="4.5" fill="#3a3830" text-anchor="middle" font-family="monospace">freestanding bathtub</text>
+            <!-- Flow arrows -->
+            <path d="M 110 32 L 110 38" stroke="#9a6f0a" stroke-width="1" fill="none" marker-end="url(#arrow)"/>
+            <path d="M 110 62 L 110 68" stroke="#9a6f0a" stroke-width="1" fill="none"/>
+            <path d="M 110 125 L 110 132" stroke="#9a6f0a" stroke-width="1" fill="none"/>
+            <path d="M 110 156 L 110 162" stroke="#9a6f0a" stroke-width="1" fill="none"/>
+            <path d="M 110 213 L 110 218" stroke="#9a6f0a" stroke-width="1" fill="none"/>
+          </svg>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════ -->
+  <!-- SLIDE 14 — SAIGON SOUL & HẺM CULTURE         -->
+  <!-- ═══════════════════════════════════════════ -->
+  <div class="slide" data-num="14">
+    <h3>"Saigon Soul" · Linh hồn kiến trúc</h3>
+    <h2>Tính xốp, Chuyển tiếp mềm & Văn hóa hẻm</h2>
+    <div class="rule-long"></div>
+    <div class="grid-2-1" style="flex: 1;">
+      <div style="display: flex; flex-direction: column; gap: 12px;">
+        <div class="card">
+          <h5>Saigon Soul không phải hoạ tiết hoài cổ</h5>
+          <p style="font-size: 12px; line-height: 1.7; color: var(--text-muted); margin-top: 6px;">
+            Việc đưa "Saigon Soul" vào không gian <strong style="color: var(--text);">không đồng nghĩa</strong> với việc trang trí bằng các hoạ tiết hoài cổ sáo rỗng. Linh hồn kiến trúc Sài Gòn nằm ở:
+          </p>
+          <ul style="margin-top: 10px; display: flex; flex-direction: column; gap: 8px;">
+            <li style="font-size: 12px; padding-left: 16px; position: relative;"><span style="position: absolute; left: 0; color: var(--amber);">✦</span><strong style="color: var(--text);">Tính xốp (Porosity)</strong> — sự chuyển tiếp mềm mại giữa trong và ngoài</li>
+            <li style="font-size: 12px; padding-left: 16px; position: relative;"><span style="position: absolute; left: 0; color: var(--amber);">✦</span><strong style="color: var(--text);">Văn hóa hẻm (Hẻm Culture)</strong> — đặc trưng giao thông mềm của Sài Gòn xưa</li>
+            <li style="font-size: 12px; padding-left: 16px; position: relative;"><span style="position: absolute; left: 0; color: var(--amber);">✦</strong></strong><strong style="color: var(--text);">Vi khí hậu tự nhiên</strong> — mô phỏng bằng thông tầng + mái lùi + màng lọc ánh sáng</li>
+          </ul>
+        </div>
+        <div class="card">
+          <h5>Tham chiếu: Saigon House · a21studio</h5>
+          <p style="font-size: 11px; line-height: 1.6; color: var(--text-muted); margin-top: 6px;">
+            "Saigon House" (a21studio) và "Thong House" (Nishizawa Architects) chứng minh rằng <strong style="color: var(--text);">việc mô phỏng tính chất các con hẻm</strong> bằng các khoảng <strong style="color: var(--text);">thông tầng, mái lùi và màng lọc ánh sáng tự nhiên</strong> có thể tạo ra các không gian sống vi khí hậu tuyệt vời.
+          </p>
+        </div>
+        <div class="card" style="background: rgba(154,111,10,0.04); border-color: var(--amber-mid);">
+          <h5 style="color: var(--amber);">Ứng dụng tại OM Solavita</h5>
+          <p style="font-size: 11px; line-height: 1.6; margin-top: 6px;">
+            Hành lang không đơn thuần là lối đi thẳng tắp lạnh lẽo, mà được tạo hình như <strong style="color: var(--text);">những con hẻm cao cấp</strong> — ánh sáng thay đổi theo nhịp điệu của các hệ lam và mảng thực vật lồng ghép.
+          </p>
+          <p style="font-size: 11px; line-height: 1.6; margin-top: 6px;">
+            Lớp lang kiến trúc này đóng vai trò <strong style="color: var(--text);">bộ lọc tâm lý</strong>, giúp khách bỏ lại sự ồn ào của phố thị trước khi bước vào thế giới vi mô tĩnh lặng tuyệt đối bên trong căn phòng.
+          </p>
+        </div>
+      </div>
+      <!-- RIGHT: SVG minh họa hành lang hẻm -->
+      <div style="display: flex; flex-direction: column; gap: 8px;">
+        <div class="floor-svg-wrap" style="padding: 10px;">
+          <div class="floor-svg-label">HÀNH LANG HẺM CAO CẤP</div>
+          <svg viewBox="0 0 220 380" style="width: 100%;">
+            <!-- Outer walls -->
+            <rect x="10" y="10" width="200" height="360" fill="none" stroke="#c8bfb0" stroke-width="2"/>
+            <!-- Thông tầng (skylight) -->
+            <rect x="20" y="20" width="180" height="60" fill="rgba(154,200,220,0.18)" stroke="#7aafd0" stroke-width="1.2"/>
+            <text x="110" y="42" font-size="7" fill="#5a7a8a" text-anchor="middle" font-family="monospace" font-weight="600">THÔNG TẦNG · MÁI LÙI</text>
+            <text x="110" y="55" font-size="5.5" fill="#5a7a8a" text-anchor="middle" font-family="monospace">màng lọc ánh sáng tự nhiên</text>
+            <!-- Sun rays through skylight -->
+            <line x1="60" y1="80" x2="50" y2="130" stroke="#d4a030" stroke-width="0.4" opacity="0.5"/>
+            <line x1="90" y1="80" x2="85" y2="130" stroke="#d4a030" stroke-width="0.4" opacity="0.5"/>
+            <line x1="120" y1="80" x2="120" y2="130" stroke="#d4a030" stroke-width="0.4" opacity="0.5"/>
+            <line x1="150" y1="80" x2="155" y2="130" stroke="#d4a030" stroke-width="0.4" opacity="0.5"/>
+            <line x1="180" y1="80" x2="190" y2="130" stroke="#d4a030" stroke-width="0.4" opacity="0.5"/>
+            <!-- Hệ lam gỗ (slats on right side) -->
+            <g>
+              <line x1="180" y1="90" x2="180" y2="370" stroke="#5a4030" stroke-width="2"/>
+              <line x1="190" y1="90" x2="190" y2="370" stroke="#5a4030" stroke-width="1.5"/>
+              <line x1="200" y1="90" x2="200" y2="370" stroke="#5a4030" stroke-width="1"/>
+            </g>
+            <text x="190" y="180" font-size="5.5" fill="#5a4030" text-anchor="middle" font-family="monospace" transform="rotate(-90, 190, 180)">HỆ LAM GỖ</text>
+            <!-- Thực vật lồng ghép -->
+            <g>
+              <circle cx="40" cy="180" r="8" fill="rgba(90,122,80,0.4)" stroke="#5a7a50" stroke-width="0.8"/>
+              <circle cx="50" cy="190" r="6" fill="rgba(90,122,80,0.4)" stroke="#5a7a50" stroke-width="0.8"/>
+              <circle cx="35" cy="195" r="5" fill="rgba(90,122,80,0.4)" stroke="#5a7a50" stroke-width="0.8"/>
+              <text x="42" y="213" font-size="5" fill="#5a7a50" text-anchor="middle" font-family="monospace">cây xanh</text>
+            </g>
+            <!-- Cửa phòng (dọc hành lang bên trái) -->
+            <rect x="10" y="100" width="50" height="50" fill="rgba(58,48,40,0.3)" stroke="#3a3028" stroke-width="1"/>
+            <text x="35" y="128" font-size="6" fill="#3a3028" text-anchor="middle" font-family="monospace">CỬA 1</text>
+            <rect x="10" y="160" width="50" height="50" fill="rgba(58,48,40,0.3)" stroke="#3a3028" stroke-width="1"/>
+            <text x="35" y="188" font-size="6" fill="#3a3028" text-anchor="middle" font-family="monospace">CỬA 2</text>
+            <rect x="10" y="220" width="50" height="50" fill="rgba(58,48,40,0.3)" stroke="#3a3028" stroke-width="1"/>
+            <text x="35" y="248" font-size="6" fill="#3a3028" text-anchor="middle" font-family="monospace">CỬA 3</text>
+            <rect x="10" y="280" width="50" height="50" fill="rgba(58,48,40,0.3)" stroke="#3a3028" stroke-width="1"/>
+            <text x="35" y="308" font-size="6" fill="#3a3028" text-anchor="middle" font-family="monospace">CỬA 4</text>
+            <!-- Lối đi hành lang -->
+            <rect x="60" y="100" width="115" height="260" fill="rgba(232,223,208,0.3)" stroke="#d8d0c4" stroke-width="0.5"/>
+            <text x="118" y="230" font-size="7" fill="#7a5e3a" text-anchor="middle" font-family="monospace" font-weight="600">HÀNH LANG HẺM</text>
+            <text x="118" y="244" font-size="5.5" fill="#9a9080" text-anchor="middle" font-family="monospace">1.6 - 1.8 m</text>
+            <!-- Gạch lát nghệ thuật (gợi hẻm Sài Gòn) -->
+            <pattern id="brick" x="60" y="260" width="10" height="6" patternUnits="userSpaceOnUse">
+              <rect width="10" height="6" fill="rgba(154,111,10,0.08)" stroke="#9a6f0a" stroke-width="0.2"/>
+            </pattern>
+            <rect x="60" y="260" width="115" height="100" fill="url(#brick)"/>
+            <text x="118" y="280" font-size="5" fill="#7a5e3a" text-anchor="middle" font-family="monospace">gạch nghệ thuật gợi hẻm</text>
+            <!-- Cuối hành lang: view -->
+            <rect x="60" y="345" width="115" height="25" fill="rgba(154,200,220,0.2)" stroke="#7aafd0" stroke-width="1"/>
+            <text x="118" y="360" font-size="6" fill="#5a7a8a" text-anchor="middle" font-family="monospace" font-weight="600">VIEW · TẦM NHÌN</text>
+            <!-- Flow arrow -->
+            <path d="M 60 105 L 60 365" stroke="#9a6f0a" stroke-width="0.6" stroke-dasharray="3,2" fill="none"/>
+            <path d="M 56 360 L 60 365 L 64 360" stroke="#9a6f0a" stroke-width="0.6" fill="none"/>
+            <text x="100" y="375" font-size="4.5" fill="#9a6f0a" font-family="monospace">hướng di chuyển</text>
+          </svg>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════ -->
+  <!-- SLIDE 15 — ACOUSTIC ENGINEERING · STC       -->
+  <!-- ═══════════════════════════════════════════ -->
+  <div class="slide" data-num="15">
+    <h3>4 · Cơ học Âm thanh · Acoustic Engineering</h3>
+    <h2>STC, Flanking Paths & Noise Criteria</h2>
+    <div class="rule-long"></div>
+    <div class="table-wrapper" style="flex: 1; overflow-y: auto; margin-bottom: 12px;">
+      <table>
+        <thead>
+          <tr>
+            <th style="width: 28%;">Cấu hình Vách ngăn</th>
+            <th style="width: 38%;">Mô tả Thành phần Kỹ thuật</th>
+            <th style="width: 12%;">STC</th>
+            <th style="width: 22%;">Đánh giá Mức độ Xa xỉ</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="td-label">Vách Tiêu chuẩn<br><span style="font-size: 9px; color: var(--text-dim); font-weight: 400;">(Không đạt chuẩn)</span></td>
+            <td>Khung xương đơn (Single Stud), thạch cao 1 mặt, không bông khoáng cách âm</td>
+            <td class="td-num">STC 33</td>
+            <td><span class="badge badge-warm">Kém</span><br><span style="font-size: 9px; color: var(--text-dim);">Tiếng nói chuyện nghe rõ, mất hoàn toàn tính riêng tư</span></td>
+          </tr>
+          <tr>
+            <td class="td-label">Vách Đơn có Cách âm</td>
+            <td>Khung xương đơn, chèn lớp cách âm (Rockwool) bên trong</td>
+            <td class="td-num">STC 39</td>
+            <td><span class="badge badge-warm">Yếu</span><br><span style="font-size: 9px; color: var(--text-dim);">Tiếng ồn lớn vẫn thẩm thấu qua vách</span></td>
+          </tr>
+          <tr>
+            <td class="td-label">Vách Khung Xương Ziczac<br><span style="font-size: 9px; color: var(--text-dim); font-weight: 400;">(Staggered)</span></td>
+            <td>Khung xương lệch nhau (Staggered Stud), chèn vật liệu cách âm mật độ cao</td>
+            <td class="td-num">STC 55</td>
+            <td><span class="badge badge-amber">Đạt chuẩn</span><br><span style="font-size: 9px; color: var(--text-dim);">Ngăn chặn hoàn toàn âm thanh sinh hoạt và tiếng nói</span></td>
+          </tr>
+          <tr>
+            <td class="td-label">Vách Khung Kép Tách Rời<br><span style="font-size: 9px; color: var(--amber); font-weight: 400;">(OM Solavita)</span></td>
+            <td>Khung xương kép (Double Stud), khe hở không khí 1 inch, lớp cách âm chuyên dụng</td>
+            <td class="td-num">STC 66</td>
+            <td><span class="badge badge-amber">Tuyệt đối</span><br><span style="font-size: 9px; color: var(--text-dim);">Riêng tư hoàn hảo, dập tắt tiếng ồn cơ học</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="grid-3">
+      <div class="card" style="background: rgba(154,111,10,0.04); border-color: var(--amber-mid);">
+        <h5 style="color: var(--amber);">4.2 · Triệt Flanking Paths</h5>
+        <p style="font-size: 10px; line-height: 1.5; margin-top: 6px;">Ngay cả khi đạt STC 66, căn phòng vẫn thất bại nếu bỏ qua đường truyền âm phụ. Âm thanh như dòng chảy chất lỏng — lách qua mọi khe hở.</p>
+        <ul style="margin-top: 6px; list-style: none; display: flex; flex-direction: column; gap: 4px;">
+          <li style="font-size: 10px; padding-left: 12px; position: relative;"><span style="position: absolute; left: 0; color: var(--amber);">•</span>Nghiêm cấm hộp điện đối lưng giữa 2 phòng</li>
+          <li style="font-size: 10px; padding-left: 12px; position: relative;"><span style="position: absolute; left: 0; color: var(--amber);">•</span>Plenum (khoảng trống trên trần) bịt kín tận dầm sàn bê tông</li>
+          <li style="font-size: 10px; padding-left: 12px; position: relative;"><span style="position: absolute; left: 0; color: var(--amber);">•</span>Tránh "cầu truyền âm" do liên kết cứng giữa 2 mặt tường</li>
+        </ul>
+      </div>
+      <div class="card" style="background: rgba(154,111,10,0.04); border-color: var(--amber-mid);">
+        <h5 style="color: var(--amber);">Cửa chính & Kính</h5>
+        <p style="font-size: 10px; line-height: 1.5; margin-top: 6px;">Cửa thường là điểm yếu (STC 20-25). OM Solavita bắt buộc:</p>
+        <ul style="margin-top: 6px; list-style: none; display: flex; flex-direction: column; gap: 4px;">
+          <li style="font-size: 10px; padding-left: 12px; position: relative;"><span style="position: absolute; left: 0; color: var(--amber);">•</span>Heavy-core acoustic doors: <strong>STC 30-35</strong></li>
+          <li style="font-size: 10px; padding-left: 12px; position: relative;"><span style="position: absolute; left: 0; color: var(--amber);">•</span>Perimeter compression seals (ron nén cao su chu vi)</li>
+          <li style="font-size: 10px; padding-left: 12px; position: relative;"><span style="position: absolute; left: 0; color: var(--amber);">•</span>Drop-down bottom sweeps (gioăng chân tự động)</li>
+          <li style="font-size: 10px; padding-left: 12px; position: relative;"><span style="position: absolute; left: 0; color: var(--amber);">•</span>Laminated acoustic glass + OITC cao (chặn rung tần số thấp)</li>
+        </ul>
+      </div>
+      <div class="card" style="background: rgba(154,111,10,0.04); border-color: var(--amber-mid);">
+        <h5 style="color: var(--amber);">4.3 · Noise Criteria (NC)</h5>
+        <p style="font-size: 10px; line-height: 1.5; margin-top: 6px;">Ngoài STC (chặn ồn xâm nhập), cần kiểm soát tiếng ồn nền từ thiết bị kỹ thuật bên trong phòng.</p>
+        <div style="margin-top: 8px; padding: 10px; background: var(--surface); border: 1px solid var(--amber-light); border-radius: 2px; text-align: center;">
+          <div style="font-family: 'Cormorant Garamond', serif; font-size: 28px; color: var(--amber); font-weight: 500;">NC-25</div>
+          <div style="font-size: 9px; color: var(--text-muted); font-family: 'Space Mono', monospace; margin-top: 4px;">PHÒNG NGỦ</div>
+        </div>
+        <p style="font-size: 10px; line-height: 1.5; margin-top: 6px;">Dưới <strong>25 dB ban đêm</strong> — máy lạnh & đường ống hoàn toàn triệt tiêu. Phục hồi thần kinh, giấc ngủ sâu không gián đoạn.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════ -->
+  <!-- SLIDE 16 — MEP / HVAC MICROCLIMATE          -->
+  <!-- ═══════════════════════════════════════════ -->
+  <div class="slide" data-num="16">
+    <h3>5 · Nhiệt Động Lực Học & MEP</h3>
+    <h2>Vi Khí Hậu Hoàn Hảo · RH 45-55%</h2>
+    <div class="rule-long"></div>
+    <div class="grid-2" style="flex: 1;">
+      <div style="display: flex; flex-direction: column; gap: 12px;">
+        <div class="card" style="border-left: 3px solid var(--amber);">
+          <h5>5.1 · Kiểm soát Độ ẩm (RH 45-55%)</h5>
+          <p style="font-size: 11px; line-height: 1.6; color: var(--text-muted); margin-top: 6px;">
+            HVAC đại trà chỉ tập trung <strong style="color: var(--text);">giảm nhiệt độ</strong> (sensible cooling). Hậu quả: máy lạnh phải chạy cực thấp để chống ngột ngạt, biến phòng thành kho lạnh — nhưng RH vẫn trên 60% (ngưỡng nấm mốc).
+          </p>
+          <div style="margin-top: 10px; display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+            <div style="padding: 10px; background: var(--surface2); border-radius: 2px;">
+              <div style="font-family: 'Space Mono', monospace; font-size: 8px; color: var(--text-dim); letter-spacing: 0.15em;">ĐẠI TRÀ</div>
+              <div style="font-family: 'Cormorant Garamond', serif; font-size: 22px; color: var(--warm); margin-top: 4px;">RH &gt; 60%</div>
+              <div style="font-size: 9px; color: var(--text-dim); margin-top: 2px;">ẩm · nấm mốc · hỏng linen</div>
+            </div>
+            <div style="padding: 10px; background: var(--amber-glow2); border: 1px solid var(--amber-light); border-radius: 2px;">
+              <div style="font-family: 'Space Mono', monospace; font-size: 8px; color: var(--amber); letter-spacing: 0.15em;">OM SOLAVITA</div>
+              <div style="font-family: 'Cormorant Garamond', serif; font-size: 22px; color: var(--amber); margin-top: 4px;">RH 45-55%</div>
+              <div style="font-size: 9px; color: var(--text-dim); margin-top: 2px;">khô ráo · trong trẻo · mùa thu</div>
+            </div>
+          </div>
+          <ul style="margin-top: 10px; list-style: none; display: flex; flex-direction: column; gap: 4px;">
+            <li style="font-size: 10px; padding-left: 14px; position: relative;"><span style="position: absolute; left: 0; color: var(--amber);">▸</span>HVAC tích hợp cảm biến IoT giám sát điểm sương (dew point) liên tục</li>
+            <li style="font-size: 10px; padding-left: 14px; position: relative;"><span style="position: absolute; left: 0; color: var(--amber);">▸</span>Máy nén biến tần hai giai đoạn (two-stage compressors)</li>
+            <li style="font-size: 10px; padding-left: 14px; position: relative;"><span style="position: absolute; left: 0; color: var(--amber);">▸</span>Chế độ làm khô không khí độc lập (dehumidification modes)</li>
+            <li style="font-size: 10px; padding-left: 14px; position: relative;"><span style="position: absolute; left: 0; color: var(--amber);">▸</span>Áp suất dương toàn tòa nhà (positive pressurization) — chặn khí ẩm xâm nhập</li>
+          </ul>
+        </div>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 12px;">
+        <div class="card" style="border-left: 3px solid var(--amber);">
+          <h5>5.2 · Circadian Lighting (2700K)</h5>
+          <p style="font-size: 11px; line-height: 1.6; color: var(--text-muted); margin-top: 6px;">
+            Màu sắc ánh sáng tác động trực tiếp đến sự tiết <strong style="color: var(--text);">melatonin</strong> và nhịp sinh học. Ánh sáng trắng (CCT cao) là cấm kỵ — tạo cảm giác lâm sàng.
+          </p>
+          <div style="margin-top: 10px; padding: 10px; background: var(--surface2); border-radius: 2px;">
+            <div style="font-family: 'Space Mono', monospace; font-size: 8px; color: var(--text-dim); letter-spacing: 0.15em;">DẢI NHIỆT ĐỘ MÀU BẮT BUỘC</div>
+            <div style="font-family: 'Cormorant Garamond', serif; font-size: 32px; color: var(--amber); text-align: center; margin: 6px 0;">2700K</div>
+            <div style="font-size: 9px; color: var(--text-dim); text-align: center;">Warm White · ánh hoàng hôn · ánh nến</div>
+          </div>
+          <ul style="margin-top: 10px; list-style: none; display: flex; flex-direction: column; gap: 4px;">
+            <li style="font-size: 10px; padding-left: 14px; position: relative;"><span style="position: absolute; left: 0; color: var(--amber);">▸</span><strong style="color: var(--text);">Chiếu sáng gián tiếp 100%</strong> — không nguồn sáng chĩa thẳng vào mắt</li>
+            <li style="font-size: 10px; padding-left: 14px; position: relative;"><span style="position: absolute; left: 0; color: var(--amber);">▸</span>Ánh sáng hắt qua khe trần, vách lam gỗ, đèn sàn</li>
+            <li style="font-size: 10px; padding-left: 14px; position: relative;"><span style="position: absolute; left: 0; color: var(--amber);">▸</span>Tạo <strong style="color: var(--text);">vệt đổ bóng mềm (shadow play)</strong> — nổi bật bề mặt vật liệu</li>
+            <li style="font-size: 10px; padding-left: 14px; position: relative;"><span style="position: absolute; left: 0; color: var(--amber);">▸</span>Từ từ nhường chỗ cho ánh sáng tự nhiên buổi sáng</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════ -->
+  <!-- SLIDE 17 — WET CORE & PLUMBING ISOLATION     -->
+  <!-- ═══════════════════════════════════════════ -->
+  <div class="slide" data-num="17">
+    <h3>5.3 · Lõi Kỹ thuật Nước · Wet Core</h3>
+    <h2>Cô lập Plumbing · Bảo vệ NC-25</h2>
+    <div class="rule-long"></div>
+    <div class="grid-2" style="flex: 1;">
+      <div style="display: flex; flex-direction: column; gap: 12px;">
+        <div class="card" style="border-left: 3px solid #b04030; background: rgba(176,64,48,0.04);">
+          <h5 style="color: #b04030;">⚠ Quy tắc bất di bất dịch</h5>
+          <p style="font-size: 13px; line-height: 1.7; color: var(--text); font-weight: 500; margin-top: 8px; font-family: 'Cormorant Garamond', serif;">
+            Tuyệt đối <u>không</u> bố trí hệ thống ống xả hoặc hộp gen kỹ thuật nằm bên trong bức tường ngay phía sau đầu giường ngủ.
+          </p>
+          <p style="font-size: 11px; line-height: 1.6; color: var(--text-muted); margin-top: 8px;">
+            Nước xả từ tầng trên rơi dọc theo trục ống tạo ra các <strong style="color: var(--text);">rung động cơ học</strong> không thể bị triệt tiêu hoàn toàn chỉ bằng lớp bọc tiêu âm. Điều này sẽ <strong style="color: var(--text);">phá hủy hoàn toàn</strong> chuẩn mực tĩnh lặng của một không gian chuẩn Aman.
+          </p>
+        </div>
+        <div class="card">
+          <h5>Nguyên tắc quy hoạch Wet Core</h5>
+          <ul style="margin-top: 8px; list-style: none; display: flex; flex-direction: column; gap: 8px;">
+            <li style="font-size: 11px; padding-left: 16px; position: relative;"><span style="position: absolute; left: 0; color: var(--amber); font-weight: 700;">01</span><strong style="color: var(--text);">Gom trục kỹ thuật cấp thoát nước</strong> ở một khu vực xa khu vực nghỉ ngơi</li>
+            <li style="font-size: 11px; padding-left: 16px; position: relative;"><span style="position: absolute; left: 0; color: var(--amber); font-weight: 700;">02</span>Wet core phải nằm ở <strong style="color: var(--text);">vách kỹ thuật chung</strong> giữa 2 phòng (chia sẻ chi phí + triệt tiêu flanking)</li>
+            <li style="font-size: 11px; padding-left: 16px; position: relative;"><span style="position: absolute; left: 0; color: var(--amber); font-weight: 700;">03</span>Ống xả phải được bọc <strong style="color: var(--text);">vật liệu tiêu âm đàn hồi</strong> (mass-loaded vinyl + foam)</li>
+            <li style="font-size: 11px; padding-left: 16px; position: relative;"><span style="position: absolute; left: 0; color: var(--amber); font-weight: 700;">04</span>Ống cấp nước nóng chạy qua tường phải cách nhiệt chống truyền nhiệt</li>
+            <li style="font-size: 11px; padding-left: 16px; position: relative;"><span style="position: absolute; left: 0; color: var(--amber); font-weight: 700;">05</span>Van giảm áp + bẫy chống búa nước (water hammer arrestor) tại mỗi nhánh</li>
+          </ul>
+        </div>
+      </div>
+      <!-- RIGHT: SVG minh họa -->
+      <div class="floor-svg-wrap" style="padding: 10px;">
+        <div class="floor-svg-label">SƠ ĐỒ CÔ LẬP WET CORE</div>
+        <svg viewBox="0 0 280 320" style="width: 100%;">
+          <!-- Outer walls -->
+          <rect x="10" y="10" width="260" height="300" fill="none" stroke="#c8bfb0" stroke-width="2"/>
+          <!-- Center wet core column -->
+          <rect x="115" y="20" width="50" height="280" fill="rgba(176,64,48,0.18)" stroke="#b04030" stroke-width="1.5"/>
+          <text x="140" y="40" font-size="7" fill="#b04030" text-anchor="middle" font-family="monospace" font-weight="600">WET CORE</text>
+          <text x="140" y="50" font-size="5" fill="#b04030" text-anchor="middle" font-family="monospace">trục kỹ thuật</text>
+          <!-- Pipes -->
+          <line x1="125" y1="60" x2="125" y2="290" stroke="#5a7a8a" stroke-width="1.5"/>
+          <text x="120" y="170" font-size="4.5" fill="#5a7a8a" text-anchor="middle" font-family="monospace" transform="rotate(-90, 120, 170)">CẤP NƯỚC</text>
+          <line x1="135" y1="60" x2="135" y2="290" stroke="#5a7a8a" stroke-width="1.5" stroke-dasharray="2,1"/>
+          <line x1="140" y1="60" x2="140" y2="290" stroke="#5a7a8a" stroke-width="1.5" stroke-dasharray="2,1"/>
+          <line x1="150" y1="60" x2="150" y2="290" stroke="#b04030" stroke-width="2"/>
+          <text x="160" y="170" font-size="4.5" fill="#b04030" text-anchor="middle" font-family="monospace" transform="rotate(-90, 160, 170)">XẢ NƯỚC</text>
+          <!-- Left room -->
+          <rect x="20" y="20" width="90" height="120" fill="rgba(58,48,40,0.1)" stroke="#3a3028" stroke-width="0.5"/>
+          <text x="65" y="80" font-size="6" fill="#3a3028" text-anchor="middle" font-family="monospace">PHÒNG 01</text>
+          <rect x="30" y="100" width="70" height="20" fill="rgba(58,48,40,0.3)" stroke="#3a3028" stroke-width="0.5"/>
+          <text x="65" y="113" font-size="5" fill="#3a3028" text-anchor="middle" font-family="monospace">đầu giường</text>
+          <!-- Distance line -->
+          <line x1="115" y1="100" x2="105" y2="100" stroke="#3a7a3a" stroke-width="0.8" stroke-dasharray="2,1"/>
+          <text x="110" y="93" font-size="4.5" fill="#3a7a3a" text-anchor="middle" font-family="monospace">an toàn</text>
+          <!-- Right room -->
+          <rect x="170" y="20" width="90" height="120" fill="rgba(58,48,40,0.1)" stroke="#3a3028" stroke-width="0.5"/>
+          <text x="215" y="80" font-size="6" fill="#3a3028" text-anchor="middle" font-family="monospace">PHÒNG 02</text>
+          <rect x="180" y="100" width="70" height="20" fill="rgba(58,48,40,0.3)" stroke="#3a3028" stroke-width="0.5"/>
+          <text x="215" y="113" font-size="5" fill="#3a3028" text-anchor="middle" font-family="monospace">đầu giường</text>
+          <line x1="165" y1="100" x2="175" y2="100" stroke="#3a7a3a" stroke-width="0.8" stroke-dasharray="2,1"/>
+          <text x="170" y="93" font-size="4.5" fill="#3a7a3a" text-anchor="middle" font-family="monospace">an toàn</text>
+          <!-- BATHROOM zones (below bed) -->
+          <rect x="20" y="150" width="90" height="60" fill="rgba(122,106,88,0.2)" stroke="#7a6a58" stroke-width="0.8"/>
+          <text x="65" y="180" font-size="6" fill="#7a6a58" text-anchor="middle" font-family="monospace">BATH 01</text>
+          <text x="65" y="190" font-size="4.5" fill="#7a6a58" text-anchor="middle" font-family="monospace">(sát wet core)</text>
+          <rect x="170" y="150" width="90" height="60" fill="rgba(122,106,88,0.2)" stroke="#7a6a58" stroke-width="0.8"/>
+          <text x="215" y="180" font-size="6" fill="#7a6a58" text-anchor="middle" font-family="monospace">BATH 02</text>
+          <text x="215" y="190" font-size="4.5" fill="#7a6a58" text-anchor="middle" font-family="monospace">(sát wet core)</text>
+          <!-- Cross out headboard -->
+          <g>
+            <rect x="30" y="100" width="70" height="20" fill="rgba(176,64,48,0.2)" stroke="#b04030" stroke-width="1"/>
+            <line x1="30" y1="100" x2="100" y2="120" stroke="#b04030" stroke-width="1.5"/>
+            <line x1="100" y1="100" x2="30" y2="120" stroke="#b04030" stroke-width="1.5"/>
+          </g>
+          <text x="65" y="135" font-size="4.5" fill="#b04030" text-anchor="middle" font-family="monospace">✗ KHÔNG ĐƯỢC</text>
+          <!-- Arrow showing vibration source -->
+          <path d="M 140 95 L 100 105" stroke="#b04030" stroke-width="0.6" stroke-dasharray="2,1" fill="none"/>
+          <text x="120" y="85" font-size="4" fill="#b04030" text-anchor="middle" font-family="monospace">rung ❌</text>
+          <path d="M 140 95 L 180 105" stroke="#3a7a3a" stroke-width="0.6" stroke-dasharray="2,1" fill="none"/>
+          <text x="160" y="85" font-size="4" fill="#3a7a3a" text-anchor="middle" font-family="monospace">tách ✓</text>
+          <!-- View zone -->
+          <rect x="20" y="220" width="240" height="50" fill="rgba(154,200,220,0.18)" stroke="#7aafd0" stroke-width="1"/>
+          <text x="140" y="245" font-size="6" fill="#5a7a8a" text-anchor="middle" font-family="monospace" font-weight="600">VIEW · BAN CÔNG / LOGGIA</text>
+          <text x="140" y="255" font-size="4.5" fill="#5a7a8a" text-anchor="middle" font-family="monospace">xa wet core</text>
+          <!-- Service shaft -->
+          <rect x="20" y="280" width="240" height="20" fill="rgba(90,90,90,0.15)" stroke="#6a6a6a" stroke-width="0.5"/>
+          <text x="140" y="293" font-size="5" fill="#6a6a6a" text-anchor="middle" font-family="monospace">SERVICE SHAFT · giếng kỹ thuật dịch vụ</text>
+        </svg>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════ -->
+  <!-- SLIDE 18 — BACK OF HOUSE · INVISIBLE SERVICE -->
+  <!-- ═══════════════════════════════════════════ -->
+  <div class="slide" data-num="18">
+    <h3>6 · Nghệ thuật Phục vụ Vô hình</h3>
+    <h2>Back of House Matrix & Frictionless Check-in</h2>
+    <div class="rule-long"></div>
+    <div class="grid-2" style="flex: 1;">
+      <div style="display: flex; flex-direction: column; gap: 12px;">
+        <div class="card" style="border-left: 3px solid var(--amber);">
+          <h5>6.1 · Ma Trận Không Gian Hậu Cần Chìm</h5>
+          <div style="margin-top: 8px; display: flex; align-items: center; gap: 12px; padding: 10px; background: var(--amber-glow2); border: 1px solid var(--amber-light); border-radius: 2px;">
+            <div style="text-align: center; flex: 1;">
+              <div style="font-family: 'Space Mono', monospace; font-size: 8px; color: var(--text-dim); letter-spacing: 0.15em;">BOH CHIẾM</div>
+              <div style="font-family: 'Cormorant Garamond', serif; font-size: 36px; color: var(--amber); font-weight: 500;">30-40%</div>
+              <div style="font-size: 9px; color: var(--text-muted);">tổng diện tích tòa nhà</div>
+            </div>
+          </div>
+          <ul style="margin-top: 10px; list-style: none; display: flex; flex-direction: column; gap: 6px;">
+            <li style="font-size: 11px; padding-left: 16px; position: relative;"><span style="position: absolute; left: 0; color: var(--amber); font-weight: 700;">▸</span><strong style="color: var(--text);">Thang máy dịch vụ (Service lift)</strong> riêng biệt — khách không bao giờ chung không gian với xe đẩy hành lý, housekeeping carts hay nhân viên bảo trì</li>
+            <li style="font-size: 11px; padding-left: 16px; position: relative;"><span style="position: absolute; left: 0; color: var(--amber); font-weight: 700;">▸</span><strong style="color: var(--text);">Sảnh dịch vụ (Service lobby)</strong> đóng kín đằng sau cánh cửa vô hình tệp màu vách tường hành lang</li>
+            <li style="font-size: 11px; padding-left: 16px; position: relative;"><span style="position: absolute; left: 0; color: var(--amber); font-weight: 700;">▸</span><strong style="color: var(--text);">HK Pantry</strong> (phòng kho đồ vải) mỗi tầng: <strong>8-10 m²</strong></li>
+            <li style="font-size: 11px; padding-left: 16px; position: relative;"><span style="position: absolute; left: 0; color: var(--amber); font-weight: 700;">▸</span><strong style="color: var(--text);">Phòng tập kết rác</strong> mỗi tầng: <strong>4-6 m²</strong>, hệ thống hút mùi + cách âm tiêu chuẩn</li>
+          </ul>
+        </div>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 12px;">
+        <div class="card" style="border-left: 3px solid var(--amber);">
+          <h5>6.2 · Frictionless Check-in (Hành trình Nhận phòng Vô hình)</h5>
+          <p style="font-size: 11px; line-height: 1.6; color: var(--text-muted); margin-top: 6px;">
+            Khu vực lễ tân truyền thống với hàng người chờ đợi là <strong style="color: var(--text);">khái niệm lỗi thời</strong>. Áp dụng bài học từ <strong style="color: var(--text);">Lokal Hotel, Nuage Paris</strong>: check-in khép kín + tự động hóa.
+          </p>
+          <div style="margin-top: 10px; display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px;">
+            <div style="padding: 8px; background: var(--surface2); border-radius: 2px; text-align: center;">
+              <div style="font-size: 8px; color: var(--amber); font-family: 'Space Mono', monospace; letter-spacing: 0.1em;">NHẬN DIỆN</div>
+              <div style="font-size: 10px; color: var(--text); margin-top: 4px; line-height: 1.3;">Hệ thống tự nhận diện sự xuất hiện của khách</div>
+            </div>
+            <div style="padding: 8px; background: var(--surface2); border-radius: 2px; text-align: center;">
+              <div style="font-size: 8px; color: var(--amber); font-family: 'Space Mono', monospace; letter-spacing: 0.1em;">ĐIỀU CHỈNH</div>
+              <div style="font-size: 10px; color: var(--text); margin-top: 4px; line-height: 1.3;">Tự điều chỉnh nhiệt độ, mở rèm</div>
+            </div>
+            <div style="padding: 8px; background: var(--surface2); border-radius: 2px; text-align: center;">
+              <div style="font-size: 8px; color: var(--amber); font-family: 'Space Mono', monospace; letter-spacing: 0.1em;">ÁNH SÁNG</div>
+              <div style="font-size: 10px; color: var(--text); margin-top: 4px; line-height: 1.3;">Kích hoạt ánh sáng chào mừng</div>
+            </div>
+          </div>
+          <div class="card" style="margin-top: 10px; background: rgba(154,111,10,0.04); border-color: var(--amber-mid);">
+            <p style="font-size: 11px; line-height: 1.6; font-style: italic; color: var(--text-muted); text-align: center;">
+              Sự sang trọng thể hiện ở việc <strong style="color: var(--text);">hệ thống đã chào đón khách trước cả khi khách kịp nhận ra</strong> — không tương tác trực tiếp, không thừa thãi.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════ -->
+  <!-- SLIDE 19 — OM CRAFTSMANSHIP                  -->
+  <!-- ═══════════════════════════════════════════ -->
+  <div class="slide" data-num="19">
+    <h3>7 · Tôn vinh "OM Craftsmanship"</h3>
+    <h2>Bản Dạ khúc của Vật liệu & Di sản</h2>
+    <div class="rule-long"></div>
+    <p style="font-size: 12px; line-height: 1.7; color: var(--text-muted); max-width: 920px; margin-bottom: 14px;">
+      Sự sang trọng thực sự phải vượt qua bài kiểm tra của <strong style="color: var(--text);">thời gian và xúc giác</strong>. Các vật liệu công nghiệp, bề mặt high-gloss hay veneer giả tạo sẽ nhanh chóng bộc lộ sự rẻ tiền dưới ánh sáng tự nhiên. <strong style="color: var(--amber);">OM Craftsmanship</strong> là sự tôn vinh chất liệu bản địa và kỹ nghệ thủ công di sản Việt Nam.
+    </p>
+    <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; flex: 1; align-items: stretch;">
+      <div class="card" style="border-top: 2.5px solid #6a4a30;">
+        <div class="card-num">7.1</div>
+        <h4 style="font-size: 14px;">Walnut & Oak</h4>
+        <p style="font-size: 9px; color: #6a4a30; font-family: 'Space Mono', monospace; letter-spacing: 0.05em; margin-bottom: 8px;">GỖ · DI SẢN ĐỘ ẤM</p>
+        <p style="font-size: 10px; line-height: 1.5;">Sồi (Oak) và óc chó (Walnut) — không phủ PU đóng kín. Xử lý <strong style="color: var(--text);">chà nhám + lau dầu thủ công</strong>, giữ cấu trúc lỗ chân lông mở (open-pore finish) cho phép ngón tay chạm trực tiếp vào kết cấu hữu cơ tự nhiên.</p>
+        <div style="margin-top: 8px; padding: 6px; background: var(--surface2); border-radius: 2px;">
+          <div style="font-size: 8px; color: var(--amber); font-family: 'Space Mono', monospace; letter-spacing: 0.1em;">NGHỆ NHÂN MỘC</div>
+          <div style="font-size: 10px; color: var(--text-muted); margin-top: 3px;">Làng nghề trăm năm tuổi VN — chế tác đồ nội thất dạng khối lớn</div>
+        </div>
+        <!-- Swatch -->
+        <div style="margin-top: 8px; display: flex; gap: 4px;">
+          <div style="width: 30px; height: 24px; background: #4a3020; border-radius: 1px; border: 1px solid var(--border);"></div>
+          <div style="width: 30px; height: 24px; background: #6a4a30; border-radius: 1px; border: 1px solid var(--border);"></div>
+          <div style="width: 30px; height: 24px; background: #8a6a4a; border-radius: 1px; border: 1px solid var(--border);"></div>
+        </div>
+      </div>
+      <div class="card" style="border-top: 2.5px solid #3a3028;">
+        <div class="card-num">7.2</div>
+        <h4 style="font-size: 14px;">Basalt & Travertine</h4>
+        <p style="font-size: 9px; color: #3a3028; font-family: 'Space Mono', monospace; letter-spacing: 0.05em; margin-bottom: 8px;">ĐÁ · KHỐI LƯỢNG VĨNH CỬU</p>
+        <p style="font-size: 10px; line-height: 1.5;"><strong style="color: var(--text);">Basalt VN</strong> — từ dung nham núi lửa cổ. Mật độ cực cao, chống thấm gần như tuyệt đối, nhám mờ tự nhiên. Ốp buồng tắm vòi sen, loggia.<br><strong style="color: var(--text);">Travertine</strong> — vân xốp rỗng. Kết hợp 2700K tạo vũ điệu ánh sáng-bóng tối.</p>
+        <div style="margin-top: 8px; display: flex; gap: 4px;">
+          <div style="width: 30px; height: 24px; background: #2a2a2a; border-radius: 1px; border: 1px solid var(--border);"></div>
+          <div style="width: 30px; height: 24px; background: #c8b890; border-radius: 1px; border: 1px solid var(--border);"></div>
+          <div style="width: 30px; height: 24px; background: #d4c8a0; border-radius: 1px; border: 1px solid var(--border);"></div>
+        </div>
+      </div>
+      <div class="card" style="border-top: 2.5px solid #c8a870;">
+        <div class="card-num">7.3</div>
+        <h4 style="font-size: 14px;">Matte Brass</h4>
+        <p style="font-size: 9px; color: #9a6820; font-family: 'Space Mono', monospace; letter-spacing: 0.05em; margin-bottom: 8px;">KIM LOẠI MỜ · PATINA</p>
+        <p style="font-size: 10px; line-height: 1.5;">Tay nắm cửa, vòi nước, khung viền đèn — <strong style="color: var(--text);">đồng mờ hoặc đồng cổ (aged brass)</strong>. Cảm hứng từ 800 năm chạm khắc đồng Bắc Bộ. Tự oxy hóa nhẹ, ngả màu theo thời gian (patina) — vẻ đẹp <em>timeless</em> chứng thực tương tác con người.</p>
+        <div style="margin-top: 8px; display: flex; gap: 4px;">
+          <div style="width: 30px; height: 24px; background: #c8a870; border-radius: 1px; border: 1px solid var(--border);"></div>
+          <div style="width: 30px; height: 24px; background: #a88860; border-radius: 1px; border: 1px solid var(--border);"></div>
+          <div style="width: 30px; height: 24px; background: #8a6a4a; border-radius: 1px; border: 1px solid var(--border);"></div>
+        </div>
+      </div>
+      <div class="card" style="border-top: 2.5px solid #8a7a5a;">
+        <div class="card-num">7.4</div>
+        <h4 style="font-size: 14px;">Linen nguyên bản</h4>
+        <p style="font-size: 9px; color: #6a5a3a; font-family: 'Space Mono', monospace; letter-spacing: 0.05em; margin-bottom: 8px;">VẢI SỢI TỰ NHIÊN</p>
+        <p style="font-size: 10px; line-height: 1.5;">Ga trải giường, vỏ gối, rèm cửa — <strong style="color: var(--text);">linen hoặc cotton hữu cơ</strong> cao cấp. Thoáng khí, thấm hút mồ hôi, bề mặt <em>hơi nhăn một cách nghệ thuật</em>. Phù hợp khí hậu nhiệt đới, xa xỉ phóng khoáng thay vì cứng nhắc công nghiệp.</p>
+        <div style="margin-top: 8px; display: flex; gap: 4px;">
+          <div style="width: 30px; height: 24px; background: #e8dfc8; border-radius: 1px; border: 1px solid var(--border);"></div>
+          <div style="width: 30px; height: 24px; background: #d4c8a8; border-radius: 1px; border: 1px solid var(--border);"></div>
+          <div style="width: 30px; height: 24px; background: #c8b890; border-radius: 1px; border: 1px solid var(--border);"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════ -->
+  <!-- SLIDE 20 — FENG SHUI & HƯỚNG NHÀ             -->
+  <!-- ═══════════════════════════════════════════ -->
+  <div class="slide" data-num="20">
+    <h3>8 · Phong Thủy Bản địa & Tâm lý Không gian</h3>
+    <h2>Saigon Soul · Đón Gió Nam · Tránh Nắng Tây</h2>
+    <div class="rule-long"></div>
+    <div class="grid-2" style="flex: 1;">
+      <div style="display: flex; flex-direction: column; gap: 12px;">
+        <div class="card" style="border-left: 3px solid #2a7a3a;">
+          <h5 style="color: #2a7a3a;">8.1 · Hướng Tối ưu (Nam · Đông Nam · Đông)</h5>
+          <p style="font-size: 11px; line-height: 1.6; color: var(--text-muted); margin-top: 6px;">
+            Ưu tiên tối thượng không phải chắn gió lạnh (miền Bắc) mà là <strong style="color: var(--text);">giải tỏa nhiệt lượng và thông gió tự nhiên</strong>. Hệ thống cửa kính lớn, loggia phòng Signature bắt buộc quay về <strong>Nam / Đông Nam / Đông</strong>.
+          </p>
+          <ul style="margin-top: 8px; list-style: none; display: flex; flex-direction: column; gap: 4px;">
+            <li style="font-size: 10px; padding-left: 14px; position: relative;"><span style="position: absolute; left: 0; color: #2a7a3a;">✓</span>Đón trọn vẹn gió mát mùa mưa (Tây Nam - Đông Nam)</li>
+            <li style="font-size: 10px; padding-left: 14px; position: relative;"><span style="position: absolute; left: 0; color: #2a7a3a;">✓</span>Ánh sáng dịu nhẹ buổi sáng diệt khuẩn tự nhiên</li>
+            <li style="font-size: 10px; padding-left: 14px; position: relative;"><span style="position: absolute; left: 0; color: #2a7a3a;">✓</span>Không bị thiêu đốt bởi bức xạ mặt trời buổi chiều</li>
+          </ul>
+        </div>
+        <div class="card" style="border-left: 3px solid #b04030;">
+          <h5 style="color: #b04030;">Xử lý Hướng Kỵ (Tây · Tây Bắc)</h5>
+          <p style="font-size: 11px; line-height: 1.6; color: var(--text-muted); margin-top: 6px;">
+            Trục Tây tích tụ nhiệt khổng lồ, tường bức xạ sức nóng tận ban đêm. Khi hình khối tòa nhà bắt buộc có mặt đứng Tây, áp dụng:
+          </p>
+          <ul style="margin-top: 8px; list-style: none; display: flex; flex-direction: column; gap: 4px;">
+            <li style="font-size: 10px; padding-left: 14px; position: relative;"><span style="position: absolute; left: 0; color: #b04030;">▸</span><strong style="color: var(--text);">Double-skin facade</strong> (tường hai lớp)</li>
+            <li style="font-size: 10px; padding-left: 14px; position: relative;"><span style="position: absolute; left: 0; color: #b04030;">▸</span>Ban công lùi sâu + hệ <strong style="color: var(--text);">lam gỗ (wooden louvers)</strong></li>
+            <li style="font-size: 10px; padding-left: 14px; position: relative;"><span style="position: absolute; left: 0; color: #b04030;">▸</span>Mảng xanh vi khí hậu (cây leo, green wall)</li>
+            <li style="font-size: 10px; padding-left: 14px; position: relative;"><span style="position: absolute; left: 0; color: #b04030;">▸</span>Triệt tiêu nhiệt trước khi chạm lớp kính phòng ngủ</li>
+          </ul>
+        </div>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 12px;">
+        <div class="card" style="border-left: 3px solid var(--amber);">
+          <h5 style="color: var(--amber);">8.2 · Các Cấm kỵ Bố trí Không gian (Taboos)</h5>
+          <p style="font-size: 11px; line-height: 1.6; color: var(--text-muted); margin-top: 6px;">
+            Luồng sinh khí (Qi) phải <strong style="color: var(--text);">luân chuyển uốn lượn, chậm rãi</strong> để tạo sự tích tụ tài lộc và an bình. Kiến giải qua lăng kính vi khí hậu học nhiệt đới + tâm lý học không gian.
+          </p>
+          <div style="margin-top: 10px; display: flex; flex-direction: column; gap: 8px;">
+            <div style="padding: 8px 10px; background: var(--surface2); border-left: 2px solid #b04030; border-radius: 2px;">
+              <div style="font-size: 10px; color: var(--text); font-weight: 500;">✗ Trực xung xuyên tâm (Xuyên tâm sát)</div>
+              <div style="font-size: 9px; color: var(--text-muted); margin-top: 3px; line-height: 1.4;">Cửa chính phòng suite <strong style="color: var(--text);">không được đối diện thẳng hàng</strong> với cửa ban công/cửa sổ lớn. Sảnh đệm (Foyer) đóng vai trò bộ cản từ tính — buộc luồng khí rẽ nhánh.</div>
+            </div>
+            <div style="padding: 8px 10px; background: var(--surface2); border-left: 2px solid #b04030; border-radius: 2px;">
+              <div style="font-size: 10px; color: var(--text); font-weight: 500;">✗ Thủy - Hỏa tương khắc</div>
+              <div style="font-size: 9px; color: var(--text-muted); margin-top: 3px; line-height: 1.4;">Vị trí máy pha cafe/bếp hâm nóng <strong style="color: var(--text);">tuyệt đối không</strong> đối diện trực tiếp hoặc sát vách với chậu rửa/phòng tắm.</div>
+            </div>
+            <div style="padding: 8px 10px; background: var(--surface2); border-left: 2px solid #b04030; border-radius: 2px;">
+              <div style="font-size: 10px; color: var(--text); font-weight: 500;">✗ Đầu giường & Trục Vệ sinh</div>
+              <div style="font-size: 9px; color: var(--text-muted); margin-top: 3px; line-height: 1.4;">Cửa WC không mở trực diện giường. Đầu giường <strong style="color: var(--text);">không tựa chung bức tường</strong> với bệ xí hoặc hộp gen cấp thoát nước — tránh hung khí + tiếng ồn cơ học phá giấc ngủ (NC-25).</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════ -->
+  <!-- SLIDE 21 — CLOSING                          -->
+  <!-- ═══════════════════════════════════════════ -->
+  <div class="slide slide-closing" data-num="21">
+    <div class="closing-ring"></div>
+    <div class="closing-ring"></div>
+    <div class="closing-ring"></div>
+    <p class="closing-quote">
+      "Bạn không đến Aman<br>để chạy trốn thế giới.<br><em style="color: var(--amber);">Bạn đến để trở về<br>với chính mình.</em>"
+    </p>
+    <div class="closing-source">Triết lý thương hiệu Aman · 1988 — Nay</div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════ -->
+  <!-- SLIDE 22 — SÁT KHÍ GÓC NHỌN                  -->
+  <!-- ═══════════════════════════════════════════ -->
+  <div class="slide" data-num="22">
+    <h3>8 · Phong Thủy Bản địa & Tâm lý Không gian</h3>
+    <h2>Sát khí Góc nhọn · Hóa giải bằng Bo tròn & Louver</h2>
+    <div class="rule-long"></div>
+    <div class="grid-2" style="flex: 1;">
+      <div style="display: flex; flex-direction: column; gap: 12px;">
+        <div class="card" style="border-left: 3px solid #b04030;">
+          <h5 style="color: #b04030;">Nguồn gốc Sát khí</h5>
+          <p style="font-size: 11px; line-height: 1.7; color: var(--text-muted); margin-top: 6px;">
+            Việc bố trí nội thất hoặc kiến trúc để lộ các <strong style="color: var(--text);">góc cạnh nhọn</strong> (góc cột, mép tủ vuông vức, cạnh bàn đá) chĩa thẳng vào giường hoặc sofa tạo ra <strong style="color: var(--text);">sát khí (Sha Qi)</strong> — luồng năng lượng tập trung dạng mũi dao vô hình xuyên thẳng vào cơ thể, gây bất an cho hệ thần kinh, mất ngủ và cảm giác bị đe dọa vô thức ngay cả khi đang thư giãn.
+          </p>
+        </div>
+        <div class="card" style="border-left: 3px solid #2a7a3a;">
+          <h5 style="color: #2a7a3a;">Thủ pháp Hóa giải của OM Solavita</h5>
+          <p style="font-size: 11px; line-height: 1.7; color: var(--text-muted); margin-top: 6px;">
+            Kiến trúc sư loại bỏ hoàn toàn các cấu trúc thô kệch bằng ba thủ pháp đan xen:
+          </p>
+          <ul style="margin-top: 8px; list-style: none; display: flex; flex-direction: column; gap: 4px;">
+            <li style="font-size: 10px; padding-left: 14px; position: relative;"><span style="position: absolute; left: 0; color: #2a7a3a;">①</span><strong style="color: var(--text);">Bo tròn mềm mại (Curved Edges)</strong> — mọi cạnh bàn đá, tủ gỗ, kệ treo đều được dát phẳng hoặc vê cong bán kính R≥15mm</li>
+            <li style="font-size: 10px; padding-left: 14px; position: relative;"><span style="position: absolute; left: 0; color: #2a7a3a;">②</span><strong style="color: var(--text);">Vách ngăn louver (Lam gỗ dọc)</strong> — phân tán luồng sát khí thành hàng vạn tia nhỏ vô hại</li>
+            <li style="font-size: 10px; padding-left: 14px; position: relative;"><span style="position: absolute; left: 0; color: #2a7a3a;">③</span><strong style="color: var(--text);">Soft Divider</strong> — rèm voan, bình phong mây, cây xanh lớn chắn giữa các góc cạnh kim loại</li>
+          </ul>
+        </div>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 12px;">
+        <div class="card" style="border-left: 3px solid var(--amber); background: var(--surface2);">
+          <h5 style="color: var(--amber);">Sơ đồ: Trước / Sau khi Hóa giải</h5>
+          <div style="margin-top: 10px; display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+            <div style="padding: 12px; background: #f5ebe0; border: 1px dashed #b04030; border-radius: 2px;">
+              <div style="font-size: 9px; color: #b04030; font-weight: 600; letter-spacing: 1px;">TRƯỚC · SÁT KHÍ</div>
+              <div style="margin-top: 12px; height: 80px; position: relative;">
+                <div style="position: absolute; left: 10px; top: 10px; width: 30px; height: 30px; background: #6b4a30; clip-path: polygon(0 0, 100% 0, 100% 30%, 30% 30%, 30% 100%, 0 100%);"></div>
+                <div style="position: absolute; right: 20px; bottom: 15px; width: 50px; height: 20px; background: #8a6a4a;"></div>
+                <div style="position: absolute; left: 30%; top: 50%; transform: translateY(-50%); width: 0; height: 0; border-left: 40px solid transparent; border-right: 40px solid transparent; border-top: 30px solid rgba(176, 64, 48, 0.45);"></div>
+              </div>
+              <div style="font-size: 9px; color: var(--text-muted); margin-top: 8px; line-height: 1.4;">Cột vuông · cạnh tủ sắc nhọn · mũi tên sát khí đâm thẳng vào sofa</div>
+            </div>
+            <div style="padding: 12px; background: #f0f3e8; border: 1px dashed #2a7a3a; border-radius: 2px;">
+              <div style="font-size: 9px; color: #2a7a3a; font-weight: 600; letter-spacing: 1px;">SAU · OM SOLAVITA</div>
+              <div style="margin-top: 12px; height: 80px; position: relative;">
+                <div style="position: absolute; left: 10px; top: 10px; width: 30px; height: 30px; background: #6b4a30; border-radius: 50% 8px 8px 8px;"></div>
+                <div style="position: absolute; left: 12px; top: 12px; width: 6px; height: 26px; background: repeating-linear-gradient(180deg, #8a6a4a 0 3px, transparent 3px 6px);"></div>
+                <div style="position: absolute; right: 20px; bottom: 15px; width: 50px; height: 20px; background: #8a6a4a; border-radius: 12px;"></div>
+                <div style="position: absolute; left: 30%; top: 50%; transform: translateY(-50%); font-size: 18px; color: #2a7a3a;">∿</div>
+              </div>
+              <div style="font-size: 9px; color: var(--text-muted); margin-top: 8px; line-height: 1.4;">Cột bọc louver gỗ · tủ bo R15 · sát khí bị phân tán thành sóng uốn</div>
+            </div>
+          </div>
+          <div style="margin-top: 12px; padding: 10px 12px; background: rgba(176, 64, 48, 0.06); border-radius: 2px;">
+            <div style="font-size: 10px; color: var(--text); line-height: 1.6;"><strong style="color: #b04030;">Nguyên tắc vàng:</strong> Không một góc cạnh nào trong tầm nhìn từ giường hoặc sofa được phép nhô ra dưới dạng đường thẳng đứng. Mọi đường gãy phải chuyển tiếp qua cung tròn hoặc tán lá.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════ -->
+  <!-- SLIDE 23 — TỶ LỆ VÀNG & THƯỚC LỖ BAN        -->
+  <!-- ═══════════════════════════════════════════ -->
+  <div class="slide" data-num="23">
+    <h3>9 · Tỷ lệ Vàng & Hình học Thiêng</h3>
+    <h2>Golden Ratio 1:1.618 · Thước Lỗ Ban 52.2 / 42.9 / 38.8</h2>
+    <div class="rule-long"></div>
+    <div class="grid-2" style="flex: 1;">
+      <div style="display: flex; flex-direction: column; gap: 10px;">
+        <div class="card" style="border-left: 3px solid var(--amber);">
+          <h5 style="color: var(--amber);">9.1 · Tỷ lệ Vàng (Φ ≈ 1.618)</h5>
+          <div style="margin-top: 8px; font-size: 11px; line-height: 1.7; color: var(--text-muted);">
+            Con số <strong style="color: var(--text);">Φ ≈ 1.618</strong> (hay quy tắc 1/3 - 2/3) làm xương sống cho mọi tổ hợp thị giác trong căn phòng:
+          </div>
+          <div style="margin-top: 10px; display: flex; flex-direction: column; gap: 6px;">
+            <div style="padding: 7px 10px; background: var(--surface2); border-radius: 2px; border-left: 2px solid var(--amber);">
+              <div style="font-size: 10px; font-weight: 600; color: var(--text);">Phân chia Không gian — 62% / 38%</div>
+              <div style="font-size: 9px; color: var(--text-muted); margin-top: 2px; line-height: 1.4;">Soft Divider không chia đôi 50/50: 62% diện tích cho công năng chính (giường, lưu thông), 38% cho sofa ngắm cảnh.</div>
+            </div>
+            <div style="padding: 7px 10px; background: var(--surface2); border-radius: 2px; border-left: 2px solid var(--amber);">
+              <div style="font-size: 10px; font-weight: 600; color: var(--text);">Cặp Nội thất — Coffee table ≈ 1/3 – 2/3 × Sofa</div>
+              <div style="font-size: 9px; color: var(--text-muted); margin-top: 2px; line-height: 1.4;">Sofa 220cm → bàn trà 120-140cm tạo tỷ lệ cân bằng tuyệt mỹ.</div>
+            </div>
+            <div style="padding: 7px 10px; background: var(--surface2); border-radius: 2px; border-left: 2px solid var(--amber);">
+              <div style="font-size: 10px; font-weight: 600; color: var(--text);">Quy tắc Màu sắc 60-30-10</div>
+              <div style="font-size: 9px; color: var(--text-muted); margin-top: 2px; line-height: 1.4;">60% tông nền tự nhiên (gỗ, plaster) · 30% vật liệu thứ cấp (đá, rèm) · 10% điểm nhấn (matte brass).</div>
+            </div>
+            <div style="padding: 7px 10px; background: var(--surface2); border-radius: 2px; border-left: 2px solid var(--amber);">
+              <div style="font-size: 10px; font-weight: 600; color: var(--text);">Mảng tường & Ron chia vách tại 61.8%</div>
+              <div style="font-size: 9px; color: var(--text-muted); margin-top: 2px; line-height: 1.4;">Vách ốp Walnut/Travertine sau đầu giường — đường ron đặt tại điểm 61.8% chiều cao/rộng, không bao giờ chia ô vuông.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 10px;">
+        <div class="card" style="border-left: 3px solid #6b4a30;">
+          <h5 style="color: #6b4a30;">9.2 · Thước Lỗ Ban — 3 Hệ kích thước</h5>
+          <div style="margin-top: 8px; display: flex; flex-direction: column; gap: 8px;">
+            <div style="padding: 8px 10px; background: #f0e8d8; border-radius: 2px;">
+              <div style="display: flex; align-items: baseline; gap: 8px;">
+                <div style="font-family: 'Georgia', serif; font-size: 20px; color: #6b4a30; font-weight: 700;">52.2</div>
+                <div style="font-size: 9px; color: var(--text-muted);">cm · Thông thủy</div>
+              </div>
+              <div style="font-size: 10px; color: var(--text); font-weight: 600; margin-top: 4px;">Cửa đi & Cửa sổ</div>
+              <div style="font-size: 9px; color: var(--text-muted); margin-top: 2px; line-height: 1.5;">Cửa chính 1 cánh <strong style="color: var(--text);">81cm / 109cm</strong> · Cửa đôi <strong style="color: var(--text);">214 – 227cm</strong>. Rơi vào 4 cung đỏ: Quý Nhân · Hiểm Họa · Thiên Tài · Phúc Lộc.</div>
+            </div>
+            <div style="padding: 8px 10px; background: #f0e8d8; border-radius: 2px;">
+              <div style="display: flex; align-items: baseline; gap: 8px;">
+                <div style="font-family: 'Georgia', serif; font-size: 20px; color: #6b4a30; font-weight: 700;">42.9</div>
+                <div style="font-size: 9px; color: var(--text-muted);">cm · Dương trạch</div>
+              </div>
+              <div style="font-size: 10px; color: var(--text); font-weight: 600; margin-top: 4px;">Giường · Bàn làm việc · Bàn ăn</div>
+              <div style="font-size: 9px; color: var(--text-muted); margin-top: 2px; line-height: 1.5;">Kích thước phủ bì (khối đặc). Lọt vào cung Tài · Nghĩa · Quan · Bản — nền tảng sức khỏe & sự nghiệp.</div>
+            </div>
+            <div style="padding: 8px 10px; background: #f0e8d8; border-radius: 2px;">
+              <div style="display: flex; align-items: baseline; gap: 8px;">
+                <div style="font-family: 'Georgia', serif; font-size: 20px; color: #6b4a30; font-weight: 700;">38.8</div>
+                <div style="font-size: 9px; color: var(--text-muted);">cm · Âm phần</div>
+              </div>
+              <div style="font-size: 10px; color: var(--text); font-weight: 600; margin-top: 4px;">Bàn thờ · Không gian Tâm linh</div>
+              <div style="font-size: 9px; color: var(--text-muted); margin-top: 2px; line-height: 1.5;">Bàn thờ gia tiên/Thần Tài. Kích thước chuẩn: dài <strong style="color: var(--text);">175cm (Đại Cát)</strong>, <strong style="color: var(--text);">197cm (Tài Lộc)</strong> × rộng 81-89cm. Cung Đinh · Vượng · Nghĩa · Quan · Hưng · Tài.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════ -->
+  <!-- SLIDE 24 — 15 LỖI THIẾT KẾ CHÍ TỬ            -->
+  <!-- ═══════════════════════════════════════════ -->
+  <div class="slide" data-num="24">
+    <h3>10 · 15 Lỗi Thiết kế Chí tử</h3>
+    <h2>Checklist Loại trừ "Fake Aman" — Từ Tổ chức Không gian đến MEP</h2>
+    <div class="rule-long"></div>
+    <div class="grid-3" style="flex: 1; gap: 10px;">
+      <div style="display: flex; flex-direction: column; gap: 6px;">
+        <div style="font-family: 'Georgia', serif; font-size: 13px; color: var(--amber); font-weight: 600; letter-spacing: 0.5px; margin-bottom: 4px;">I · Tổ chức Không gian & Hình học</div>
+        <div style="padding: 6px 9px; background: var(--surface2); border-left: 2px solid #b04030; border-radius: 2px;">
+          <div style="font-size: 9.5px; font-weight: 600; color: var(--text);">1. Giường đẩy sát tường</div>
+          <div style="font-size: 8.5px; color: var(--text-muted); margin-top: 2px; line-height: 1.4;">Phá quy tắc circumambulation, không gian bị bức tử.</div>
+        </div>
+        <div style="padding: 6px 9px; background: var(--surface2); border-left: 2px solid #b04030; border-radius: 2px;">
+          <div style="font-size: 9.5px; font-weight: 600; color: var(--text);">2. Loại bỏ Sofa</div>
+          <div style="font-size: 8.5px; color: var(--text-muted); margin-top: 2px; line-height: 1.4;">Không có Lounge đệm = triệt tiêu khái niệm "dinh thự tư nhân".</div>
+        </div>
+        <div style="padding: 6px 9px; background: var(--surface2); border-left: 2px solid #b04030; border-radius: 2px;">
+          <div style="font-size: 9.5px; font-weight: 600; color: var(--text);">3. Closet giả (tủ siêu mỏng)</div>
+          <div style="font-size: 8.5px; color: var(--text-muted); margin-top: 2px; line-height: 1.4;">Sâu &lt;60cm, không walk-in → như khách sạn 3 sao đô thị.</div>
+        </div>
+        <div style="padding: 6px 9px; background: var(--surface2); border-left: 2px solid #b04030; border-radius: 2px;">
+          <div style="font-size: 9.5px; font-weight: 600; color: var(--text);">4. Phòng tắm bị thu nhỏ (&lt;11m²)</div>
+          <div style="font-size: 8.5px; color: var(--text-muted); margin-top: 2px; line-height: 1.4;">Hy sinh bathroom để tăng diện tích ngủ = sai lầm chết người.</div>
+        </div>
+        <div style="padding: 6px 9px; background: var(--surface2); border-left: 2px solid #b04030; border-radius: 2px;">
+          <div style="font-size: 9.5px; font-weight: 600; color: var(--text);">5. Bồn tắm nhét góc</div>
+          <div style="font-size: 8.5px; color: var(--text-muted); margin-top: 2px; line-height: 1.4;">Freestanding tub mất ý nghĩa điêu khắc khi dính tường (thiếu lùi ≥30cm).</div>
+        </div>
+        <div style="padding: 6px 9px; background: var(--surface2); border-left: 2px solid #b04030; border-radius: 2px;">
+          <div style="font-size: 9.5px; font-weight: 600; color: var(--text);">6. Không Foyer · Xuyên tâm sát</div>
+          <div style="font-size: 8.5px; color: var(--text-muted); margin-top: 2px; line-height: 1.4;">Mở cửa chính → thẳng giường/ban công. Thất thoát tài lộc, thiếu decompression zone.</div>
+        </div>
+        <div style="padding: 6px 9px; background: var(--surface2); border-left: 2px solid #b04030; border-radius: 2px;">
+          <div style="font-size: 9.5px; font-weight: 600; color: var(--text);">7. Chia phòng bằng tường cứng</div>
+          <div style="font-size: 8.5px; color: var(--text-muted); margin-top: 2px; line-height: 1.4;">Băm nát thể tích chung thành hộp ngột ngạt thay vì lớp lang mềm.</div>
+        </div>
+        <div style="padding: 6px 9px; background: var(--surface2); border-left: 2px solid #b04030; border-radius: 2px;">
+          <div style="font-size: 9.5px; font-weight: 600; color: var(--text);">8. Hành lang &lt;1.6m</div>
+          <div style="font-size: 8.5px; color: var(--text-muted); margin-top: 2px; line-height: 1.4;">Ống dẫn âm khuếch đại bước chân, gây kìm nén tâm lý.</div>
+        </div>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 6px;">
+        <div style="font-family: 'Georgia', serif; font-size: 13px; color: var(--amber); font-weight: 600; letter-spacing: 0.5px; margin-bottom: 4px;">II · MEP & Tiện nghi Tâm lý</div>
+        <div style="padding: 6px 9px; background: var(--surface2); border-left: 2px solid #b04030; border-radius: 2px;">
+          <div style="font-size: 9.5px; font-weight: 600; color: var(--text);">9. Dịch vụ lộ liễu</div>
+          <div style="font-size: 8.5px; color: var(--text-muted); margin-top: 2px; line-height: 1.4;">Khách thấy nhân viên vội vã, xe đẩy → phá ảo giác cô lập.</div>
+        </div>
+        <div style="padding: 6px 9px; background: var(--surface2); border-left: 2px solid #b04030; border-radius: 2px;">
+          <div style="font-size: 9.5px; font-weight: 600; color: var(--text);">10. Tiếng ồn cơ học (STC &lt;50, NC &gt;25)</div>
+          <div style="font-size: 8.5px; color: var(--text-muted); margin-top: 2px; line-height: 1.4;">Lọt âm máy lạnh, ống nước, phòng bên → xâm phạm vùng an toàn.</div>
+        </div>
+        <div style="padding: 6px 9px; background: var(--surface2); border-left: 2px solid #b04030; border-radius: 2px;">
+          <div style="font-size: 9.5px; font-weight: 600; color: var(--text);">11. Ánh sáng trắng &gt;3000K</div>
+          <div style="font-size: 8.5px; color: var(--text-muted); margin-top: 2px; line-height: 1.4;">Tạo bầu không khí y tế, căng thẳng. Phải dùng 2700K làm dịu thần kinh.</div>
+        </div>
+        <div style="padding: 6px 9px; background: var(--surface2); border-left: 2px solid #b04030; border-radius: 2px;">
+          <div style="font-size: 9.5px; font-weight: 600; color: var(--text);">12. Không có "khoảng thở"</div>
+          <div style="font-size: 8.5px; color: var(--text-muted); margin-top: 2px; line-height: 1.4;">Nhồi nhét đồ, phớt lờ Φ 1:1.618, "Không gian trước vật thể".</div>
+        </div>
+        <div style="padding: 6px 9px; background: var(--surface2); border-left: 2px solid #b04030; border-radius: 2px;">
+          <div style="font-size: 9.5px; font-weight: 600; color: var(--text);">13. Thiết kế phẳng, thiếu layer</div>
+          <div style="font-size: 8.5px; color: var(--text-muted); margin-top: 2px; line-height: 1.4;">Không giao thoa bóng–sáng, không chiều sâu thị giác.</div>
+        </div>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 6px;">
+        <div style="font-family: 'Georgia', serif; font-size: 13px; color: var(--amber); font-weight: 600; letter-spacing: 0.5px; margin-bottom: 4px;">III · Độ Chân thực Vật liệu</div>
+        <div style="padding: 6px 9px; background: var(--surface2); border-left: 2px solid #b04030; border-radius: 2px;">
+          <div style="font-size: 9.5px; font-weight: 600; color: var(--text);">14. Vật liệu bóng bẩy (High-gloss)</div>
+          <div style="font-size: 8.5px; color: var(--text-muted); margin-top: 2px; line-height: 1.4;">Phản gương, nhựa bóng, kim loại sáng → chói mắt, giả tạo.</div>
+        </div>
+        <div style="padding: 6px 9px; background: var(--surface2); border-left: 2px solid #b04030; border-radius: 2px;">
+          <div style="font-size: 9.5px; font-weight: 600; color: var(--text);">15. TV lộ diện thô thiển</div>
+          <div style="font-size: 8.5px; color: var(--text-muted); margin-top: 2px; line-height: 1.4;">Màn hình khổng lồ chi phối tường → phá kết nối thiên nhiên, mộc mạc. Bắt buộc ẩn sau panel/trượt cơ khí.</div>
+        </div>
+        <div class="card" style="border-left: 3px solid var(--amber); margin-top: 8px; background: var(--surface2);">
+          <h5 style="color: var(--amber); font-size: 11px;">Tổng kết Triết lý</h5>
+          <p style="font-size: 10px; line-height: 1.6; color: var(--text-muted); margin-top: 4px;">15 lỗi trên đều quy về một gốc rễ: <strong style="color: var(--text);">phô trương bề mặt</strong> thay vì bảo vệ <strong style="color: var(--text);">yếu tố vô hình</strong> — khoảng trống, sự tĩnh lặng, luồng khí, hơi thở nhiệt đới và phục vụ ẩn danh.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════ -->
+  <!-- SLIDE 25 — KẾT LUẬN & HIẾN CHƯƠNG            -->
+  <!-- ═══════════════════════════════════════════ -->
+  <div class="slide slide-closing" data-num="25">
+    <div class="closing-ring"></div>
+    <div class="closing-ring"></div>
+    <div class="closing-ring"></div>
+    <div style="position: relative; z-index: 2; max-width: 880px; text-align: center;">
+      <p style="font-family: 'Georgia', serif; font-size: 11px; color: var(--amber); letter-spacing: 4px; margin-bottom: 16px;">HIẾN CHƯƠNG OM SOLAVITA</p>
+      <p class="closing-quote">
+        Sự xa xỉ không nằm ở những khối vật chất<br>
+        <em style="color: var(--amber);">chúng ta xây dựng.</em><br><br>
+        Sự xa xỉ nằm ở những gì khách hàng<br>
+        <em style="color: var(--amber);">cảm nhận được bằng sâu thẳm tâm hồn.</em>
+      </p>
+      <div style="margin-top: 32px; height: 1px; width: 120px; background: var(--amber); margin-left: auto; margin-right: auto;"></div>
+      <p style="font-size: 12px; color: var(--text); line-height: 1.8; margin-top: 24px; font-style: italic; max-width: 720px; margin-left: auto; margin-right: auto;">
+        Tinh thần bản địa phóng khoáng của <strong style="color: var(--amber);">Linh hồn Sài Gòn</strong> ·<br>
+        Độ sâu lắng, chân thật của <strong style="color: var(--amber);">Kỹ nghệ thủ công OM</strong> ·<br>
+        Tỷ lệ thiêng liêng <strong style="color: var(--amber);">Lỗ Ban &amp; Φ 1:1.618</strong><br><br>
+        <span style="font-size: 11px; color: var(--text-muted);">— hòa quyện thành một bản thể kiến trúc không thể bị sao chép. —</span>
+      </p>
+      <div class="closing-source" style="margin-top: 28px;">Private Sanctuary · Tĩnh lặng · Sâu sắc · Riêng tư · Duy nhất</div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ── NAV ── -->
+<div id="nav"></div>
+<div id="slide-counter">01 / 25</div>
+<div id="key-hint"><span class="key">← →</span> Chuyển slide · <span class="key">Space</span> Tiếp</div>
+
+<script>
+  const slides = document.querySelectorAll('.slide');
+  const nav = document.getElementById('nav');
+  const counter = document.getElementById('slide-counter');
+  const progress = document.getElementById('progress');
+  const total = slides.length;
+  let current = 0;
+
+  slides.forEach((_, i) => {
+    const dot = document.createElement('div');
+    dot.className = 'dot' + (i === 0 ? ' active' : '');
+    dot.addEventListener('click', () => goTo(i));
+    nav.appendChild(dot);
+  });
+
+  function goTo(i) {
+    slides[current].classList.remove('active');
+    nav.children[current].classList.remove('active');
+    current = (i + total) % total;
+    slides[current].classList.add('active');
+    nav.children[current].classList.add('active');
+    counter.textContent = String(current + 1).padStart(2, '0') + ' / ' + String(total).padStart(2, '0');
+    progress.style.width = ((current + 1) / total * 100) + '%';
+  }
+
+  document.addEventListener('keydown', e => {
+    if (e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); goTo(current + 1); }
+    if (e.key === 'ArrowLeft') { e.preventDefault(); goTo(current - 1); }
+  });
+
+  let tx = 0;
+  document.addEventListener('touchstart', e => { tx = e.touches[0].clientX; });
+  document.addEventListener('touchend', e => {
+    const dx = e.changedTouches[0].clientX - tx;
+    if (Math.abs(dx) > 50) goTo(dx < 0 ? current + 1 : current - 1);
+  });
+
+  const saved = localStorage.getItem('aman-detailed-vi-slide');
+  if (saved) goTo(parseInt(saved));
+  setInterval(() => localStorage.setItem('aman-detailed-vi-slide', current), 1000);
+</script>
+</body>
+</html>
