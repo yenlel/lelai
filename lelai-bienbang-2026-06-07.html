@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+<meta name="theme-color" content="#1a1a1a">
+<title>Biên Bản Họp Lelai — 7/6/2026</title>
+<style>
+  :root{
+    --bg:#0f0f0f; --surface:#1a1a1a; --card:#222; --line:#333;
+    --text:#e8e8e8; --muted:#999; --accent:#d4a574; --accent2:#8b6f47;
+    --warn:#e07b5b; --ok:#7ba888; --info:#6b9bd1;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+  html{scroll-behavior:smooth;scroll-padding-top:60px}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--text);line-height:1.6;font-size:16px;padding-bottom:80px}
+  img{max-width:100%;height:auto;display:block}
+
+  /* Hero */
+  .hero{position:relative;width:100%;height:42vh;min-height:280px;max-height:420px;overflow:hidden;background:#000}
+  .hero img{width:100%;height:100%;object-fit:cover;opacity:.55;filter:brightness(.7)}
+  .hero-overlay{position:absolute;inset:0;background:linear-gradient(180deg,transparent 30%,rgba(0,0,0,.85) 100%);display:flex;flex-direction:column;justify-content:flex-end;padding:20px 18px 22px}
+  .hero-tag{display:inline-block;background:var(--accent);color:#1a1a1a;font-size:11px;font-weight:700;padding:4px 10px;border-radius:3px;letter-spacing:1px;margin-bottom:10px;align-self:flex-start;text-transform:uppercase}
+  .hero h1{font-size:26px;line-height:1.2;font-weight:700;margin-bottom:6px;color:#fff}
+  .hero .sub{font-size:14px;color:rgba(255,255,255,.85);font-weight:400}
+  .hero .meta{font-size:12px;color:rgba(255,255,255,.6);margin-top:8px;display:flex;flex-wrap:wrap;gap:10px}
+  .hero .meta span{display:inline-flex;align-items:center;gap:4px}
+
+  /* Sticky nav */
+  .nav{position:sticky;top:0;z-index:100;background:rgba(15,15,15,.95);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-bottom:1px solid var(--line);padding:10px 0;overflow-x:auto;white-space:nowrap;-webkit-overflow-scrolling:touch}
+  .nav::-webkit-scrollbar{display:none}
+  .nav-inner{display:inline-flex;gap:6px;padding:0 16px}
+  .nav a{flex-shrink:0;font-size:12px;color:var(--muted);text-decoration:none;padding:6px 12px;border-radius:16px;border:1px solid var(--line);transition:all .15s}
+  .nav a:active{background:var(--accent);color:#000;border-color:var(--accent)}
+
+  /* Container */
+  .container{max-width:680px;margin:0 auto;padding:0 16px}
+
+  /* Sections */
+  section{padding:32px 0;border-bottom:1px solid var(--line)}
+  section:last-child{border-bottom:none}
+  h2{font-size:20px;font-weight:700;margin-bottom:16px;color:var(--accent);display:flex;align-items:center;gap:8px}
+  h2::before{content:'';width:3px;height:18px;background:var(--accent);border-radius:2px}
+  h3{font-size:16px;font-weight:600;margin:18px 0 10px;color:#fff}
+  h4{font-size:14px;font-weight:600;margin:14px 0 8px;color:var(--accent2);text-transform:uppercase;letter-spacing:.5px}
+  p{font-size:15px;margin-bottom:12px;color:#d0d0d0}
+  strong{color:#fff;font-weight:600}
+  em{color:var(--accent);font-style:normal;font-weight:600}
+
+  /* Cards */
+  .card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:16px;margin:12px 0}
+  .card-warn{border-left:3px solid var(--warn);background:linear-gradient(90deg,rgba(224,123,91,.08),transparent 40%)}
+  .card-ok{border-left:3px solid var(--ok);background:linear-gradient(90deg,rgba(123,168,136,.08),transparent 40%)}
+  .card-info{border-left:3px solid var(--info);background:linear-gradient(90deg,rgba(107,155,209,.08),transparent 40%)}
+  .card-accent{border-left:3px solid var(--accent);background:linear-gradient(90deg,rgba(212,165,116,.08),transparent 40%)}
+
+  /* Lists */
+  ul,ol{margin:10px 0 14px 20px}
+  li{font-size:15px;margin-bottom:6px;color:#d0d0d0}
+  li strong{color:#fff}
+
+  /* Stats */
+  .stats{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin:14px 0}
+  .stat{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:12px;text-align:center}
+  .stat .num{font-size:24px;font-weight:700;color:var(--accent);display:block;line-height:1.1}
+  .stat .lbl{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-top:4px}
+
+  /* Table */
+  .table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;margin:14px 0;border-radius:8px;border:1px solid var(--line)}
+  table{width:100%;border-collapse:collapse;font-size:13px;min-width:560px}
+  th{background:var(--surface);color:var(--accent);font-weight:600;text-align:left;padding:10px 12px;border-bottom:1px solid var(--line);white-space:nowrap}
+  td{padding:10px 12px;border-bottom:1px solid var(--line);color:#d0d0d0;vertical-align:top}
+  tr:last-child td{border-bottom:none}
+  tr:active td{background:rgba(212,165,116,.05)}
+
+  /* Specs */
+  .spec{display:flex;justify-content:space-between;align-items:flex-start;padding:10px 0;border-bottom:1px solid var(--line);gap:12px}
+  .spec:last-child{border-bottom:none}
+  .spec .k{font-size:13px;color:var(--muted);flex-shrink:0}
+  .spec .v{font-size:14px;color:#fff;text-align:right;font-weight:500}
+
+  /* Image w/ caption */
+  figure{margin:18px 0;border-radius:10px;overflow:hidden;background:var(--surface)}
+  figure img{width:100%;height:auto}
+  figcaption{font-size:12px;color:var(--muted);padding:8px 12px;background:rgba(0,0,0,.4);text-align:center}
+
+  /* Timeline */
+  .timeline{position:relative;padding-left:24px;margin:14px 0}
+  .timeline::before{content:'';position:absolute;left:7px;top:6px;bottom:6px;width:2px;background:linear-gradient(180deg,var(--accent),transparent)}
+  .tl-item{position:relative;margin-bottom:18px;padding-left:8px}
+  .tl-item::before{content:'';position:absolute;left:-22px;top:6px;width:12px;height:12px;border-radius:50%;background:var(--accent);box-shadow:0 0 0 3px var(--bg)}
+  .tl-item h4{margin:0 0 4px;color:#fff;font-size:14px}
+  .tl-item p{font-size:13px;color:#b0b0b0;margin:0}
+
+  /* Tag list */
+  .tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+  .tag{font-size:11px;background:rgba(212,165,116,.12);color:var(--accent);padding:3px 9px;border-radius:10px;border:1px solid rgba(212,165,116,.3)}
+
+  /* Gallery */
+  .gallery{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin:14px 0}
+  .gallery a{aspect-ratio:1;overflow:hidden;border-radius:6px;display:block;background:var(--surface)}
+  .gallery img{width:100%;height:100%;object-fit:cover;transition:transform .2s}
+  .gallery a:active img{transform:scale(.95)}
+
+  /* Quote */
+  blockquote{border-left:3px solid var(--accent);padding:10px 14px;margin:14px 0;background:rgba(212,165,116,.05);border-radius:0 6px 6px 0;font-style:italic;color:#d0d0d0}
+  blockquote footer{margin-top:6px;font-size:12px;color:var(--muted);font-style:normal}
+
+  /* Footer */
+  .page-footer{text-align:center;padding:32px 16px 16px;font-size:12px;color:var(--muted)}
+  .page-footer a{color:var(--accent);text-decoration:none}
+
+  /* Responsive */
+  @media(min-width:600px){
+    .hero h1{font-size:32px}
+    .hero{height:50vh}
+    .stats{grid-template-columns:repeat(4,1fr)}
+  }
+  @media(prefers-color-scheme:light){
+    :root{--bg:#f7f5f0;--surface:#fff;--card:#fafaf7;--line:#e5e0d5;--text:#1a1a1a;--muted:#666}
+    body{background:var(--bg);color:var(--text)}
+    p,li,td{color:#333}
+    strong,h3{color:#000}
+    .nav{background:rgba(247,245,240,.95)}
+    .hero-overlay{background:linear-gradient(180deg,transparent 30%,rgba(255,255,255,.92) 100%)}
+    .hero h1,.hero .sub{color:#1a1a1a}
+  }
+</style>
+</head>
+<body>
+
+<!-- HERO -->
+<header class="hero">
+  <img src="https://images.pexels.com/photos/1134176/pexels-photo-1134176.jpeg?auto=compress&cs=tinysrgb&w=1200" alt="Luxury hotel lobby" loading="eager">
+  <div class="hero-overlay">
+    <span class="hero-tag">Biên Bản Họp</span>
+    <h1>Lelai — Tái Cấu Trúc & Quy Hoạt Hợp Nhất</h1>
+    <p class="sub">Khách sạn hạng sang Solavita · 28 phòng · 4 phong cách</p>
+    <div class="meta">
+      <span>📅 7/6/2026</span>
+      <span>📍 Solavita HQ</span>
+      <span>🏨 28 phòng</span>
+      <span>🏗️ 4 style</span>
+    </div>
+  </div>
+</header>
+
+<!-- STICKY NAV -->
+<nav class="nav" aria-label="Mục lục">
+  <div class="nav-inner">
+    <a href="#tongquan">Tổng quan</a>
+    <a href="#hopnhat">Hợp nhất</a>
+    <a href="#pccc">PCCC</a>
+    <a href="#me">M&E</a>
+    <a href="#kien truc">Kiến trúc</a>
+    <a href="#amthuc">Ẩm thực</a>
+    <a href="#quytrinh">Quy trình</a>
+    <a href="#actions">Actions</a>
+    <a href="#faq">FAQ</a>
+  </div>
+</nav>
+
+<div class="container">
+
+<!-- 1. TONG QUAN -->
+<section id="tongquan">
+  <h2>Tổng quan dự án</h2>
+
+  <div class="stats">
+    <div class="stat"><span class="num">28</span><span class="lbl">Phòng</span></div>
+    <div class="stat"><span class="num">4</span><span class="lbl">Phong cách</span></div>
+    <div class="stat"><span class="num">36-42m²</span><span class="lbl">Diện tích/phòng</span></div>
+    <div class="stat"><span class="num">68</span><span class="lbl">Chỗ nhà hàng</span></div>
+  </div>
+
+  <div class="card card-accent">
+    <p><strong>Solavita</strong> — tên thương hiệu nhấn mạnh <em>ánh sáng tự nhiên</em>. Dự án cao trên 28m, bắt buộc trang bị thang máy chữa cháy và đáp ứng đầy đủ tiêu chuẩn PCCC VN.</p>
+    <div class="tags">
+      <span class="tag">Luxury 5★</span>
+      <span class="tag">28 phòng</span>
+      <span class="tag">Bếp điện 100%</span>
+      <span class="tag">RCU Data-driven</span>
+      <span class="tag">Seamless Design</span>
+    </div>
+  </div>
+
+  <h3>4 phong cách thiết kế</h3>
+  <div class="gallery">
+    <a href="#style-tokyo"><img src="file:///D:/diagrams/lelai-images/room-tokyo.svg" alt="Tokyo Vibe" loading="lazy"></a>
+    <a href="#style-kyoto"><img src="file:///D:/diagrams/lelai-images/room-kyoto.jpg" alt="Kyoto Vibe" loading="lazy"></a>
+    <a href="#style-newyork"><img src="file:///D:/diagrams/lelai-images/room-newyork.jpg" alt="New York Vibe" loading="lazy"></a>
+    <a href="#style-metropole"><img src="file:///D:/diagrams/lelai-images/room-metropole.jpg" alt="Metropole Vibe" loading="lazy"></a>
+  </div>
+  <div class="spec" id="style-tokyo"><span class="k">Tokyo Vibe</span><span class="v">Washi · Shoji · ánh sáng khuếch tán</span></div>
+  <div class="spec" id="style-kyoto"><span class="k">Kyoto Vibe</span><span class="v">Gỗ tự nhiên · vườn khô · tĩnh lặng</span></div>
+  <div class="spec" id="style-newyork"><span class="k">New York Vibe</span><span class="v">Kính · thép · cityscape · cosmopolitan</span></div>
+  <div class="spec" id="style-metropole"><span class="k">Metropole Vibe</span><span class="v">Đá cổ điển · chandelier · soft luxury</span></div>
+
+  <h3>Key dates</h3>
+  <div class="timeline">
+    <div class="tl-item"><h4>7/6/2026 — Họp hiện tại</h4><p>Rà soát phương án, thu thập yêu cầu kỹ thuật, thống nhất hướng điều chỉnh.</p></div>
+    <div class="tl-item"><h4>Tuần sau — T5/T6: Gửi layout mới</h4><p>KTS Thực gửi bản layout tích hợp minimum standards.</p></div>
+    <div class="tl-item"><h4>1 ngày sau — Cross-check</h4><p>Các nhà thầu kiểm tra chéo bản vẽ mới.</p></div>
+    <div class="tl-item"><h4>19/6 — Họp chốt FREEZE 🔒</h4><p>Đóng băng kiến trúc (đẩy từ 20-21/6).</p></div>
+    <div class="tl-item"><h4>Sau 19/6 — Concept & Detail</h4><p>M&E + nội thất triển khai chi tiết.</p></div>
+  </div>
+</section>
+
+<!-- 2. HOP NHAT -->
+<section id="hopnhat">
+  <h2>Ý tưởng hợp nhất 2 khối nhà</h2>
+
+  <div class="card card-warn">
+    <h3 style="color:var(--warn)">🌀 "Hơi điên rồ" — KTS Lân</h3>
+    <p>Thay vì giữ nguyên con hẻm giữa 2 khối nhà, <strong>xây ép khối lớn vào khối nhỏ</strong> thành 1 khối liền mạch, đồng thời <strong>hoán đổi vị trí hẻm dân sinh</strong> sang phía bên kia công trình.</p>
+  </div>
+
+  <h3>Lợi ích</h3>
+  <ul>
+    <li><strong>Mặt tiền</strong> bề thế, xóa tình trạng kiến trúc manh mún</li>
+    <li><strong>Cộng đồng</strong>: đường dân sinh thẳng hơn, bớt ngoằn ngoèo</li>
+    <li><strong>Giá trị BĐS</strong> nhà 97 + các hộ bên cạnh tăng</li>
+    <li>Phù hợp xu hướng chỉnh trang đô thị của thành phố</li>
+  </ul>
+
+  <h3>Rủi ro & trạng thái</h3>
+  <div class="card">
+    <div class="spec"><span class="k">Khả năng giữ 2 khối tách biệt</span><span class="v" style="color:var(--warn)">~70%</span></div>
+    <div class="spec"><span class="k">Thời gian pháp lý (phường + tổ dân phố)</span><span class="v">≥ 6 tháng</span></div>
+    <div class="spec"><span class="k">Nếu khả thi → phải đập lại</span><span class="v">Tầng hầm → Tầng 3</span></div>
+    <div class="spec"><span class="k">Phương án hiện tại</span><span class="v" style="color:var(--ok)">Song song tiếp tục</span></div>
+  </div>
+
+  <figure>
+    <img src="https://images.pexels.com/photos/1267320/pexels-photo-1267320.jpeg?auto=compress&cs=tinysrgb&w=800" alt="Architectural blueprint" loading="lazy">
+    <figcaption>Concept hợp nhất — cần tờ trình thuyết phục cộng đồng</figcaption>
+  </figure>
+</section>
+
+<!-- 3. PCCC -->
+<section id="pccc">
+  <h2>PCCC & Thang máy</h2>
+
+  <div class="card card-ok">
+    <h3>✅ Quyết định lớn: BỎ HOÀN TOÀN GAS</h3>
+    <p>Kho gas yêu cầu tường gạch đặc REI 150 + bán kính 2m không lỗ mở → quá phức tạp và rủi ro. <strong>Chuyển 100% sang bếp điện</strong> (chuẩn du thuyền Star Cruise).</p>
+    <p style="color:var(--muted);font-size:13px">→ M&E phải tính lại công suất điện cho nhà hàng</p>
+  </div>
+
+  <h3>Thang máy chữa cháy (bắt buộc >28m)</h3>
+  <div class="card">
+    <div class="spec"><span class="k">Tải trọng tối thiểu</span><span class="v">600 kg</span></div>
+    <div class="spec"><span class="k">Buồng thang sâu</span><span class="v">2.1 m</span></div>
+    <div class="spec"><span class="k">Sảnh đệm phía trước</span><span class="v">2.3 m</span></div>
+    <div class="spec"><span class="k">Phải chạy xuống tầng hầm</span><span class="v">Có</span></div>
+  </div>
+  <div class="card card-info">
+    <p><strong>Giải pháp kỹ thuật:</strong> dời đối trọng sang hông + nhích trục thang ra <em>20cm</em>. Sảnh đệm chỉ mở cửa <strong>nhà vệ sinh</strong>, tuyệt đối không phòng công năng khác (tránh sụt áp).</p>
+  </div>
+
+  <h3>Phòng trực PCCC</h3>
+  <div class="card">
+    <div class="spec"><span class="k">Diện tích tối thiểu</span><span class="v">6 m² (8m² nếu có thiết bị)</span></div>
+    <div class="spec"><span class="k">Lối tiếp cận</span><span class="v">Từ bên trong (đã bãi bỏ 2 lối)</span></div>
+    <div class="spec"><span class="k">Hiện trạng</span><span class="v" style="color:var(--warn)">&lt;5m² → cần điều chỉnh</span></div>
+  </div>
+
+  <h3>Lối thoát hiểm tầng hầm</h3>
+  <div class="card">
+    <div class="spec"><span class="k">Số lối thoát (bắt buộc)</span><span class="v">2 (&gt;300m² + &gt;15 người)</span></div>
+    <div class="spec"><span class="k">Hành lang rộng</span><span class="v">1.2 m (thang phụ: 900mm)</span></div>
+    <div class="spec"><span class="k">Cửa thoát nạn</span><span class="v">Mở bung ra ngoài</span></div>
+    <div class="spec"><span class="k">Cánh cửa nhô ra</span><span class="v">≤ 1/4 hành lang</span></div>
+  </div>
+</section>
+
+<!-- 4. ME -->
+<section id="me">
+  <h2>Hệ thống M&E</h2>
+
+  <h3>💧 Nước</h3>
+  <div class="card">
+    <div class="spec"><span class="k">Sinh hoạt</span><span class="v">12 chỉ tiêu</span></div>
+    <div class="spec"><span class="k">Bếp + nhà hàng</span><span class="v">14 chỉ tiêu (chuẩn 6148 Pasteur)</span></div>
+    <div class="spec"><span class="k">Làm đá viên</span><span class="v">+ Bộ lọc UV</span></div>
+    <div class="spec"><span class="k">Gia nhiệt</span><span class="v">Bộ làm mềm, &lt;50 ppm</span></div>
+    <div class="spec"><span class="k">Bể nước (nhà hàng 68 chỗ × 18L)</span><span class="v">2 khối</span></div>
+  </div>
+
+  <h3>⚡ Điện & Máy phát</h3>
+  <div class="card card-warn">
+    <p><strong>Bài toán khó:</strong> máy phát dài <em>7m</em>, bán hầm trần chỉ cao <em>2.2-2.3m</em>, phải có louver thông gió lên tầng 1.</p>
+    <p style="font-size:13px;color:var(--muted)">Đang nghiên cứu: chồng 2 máy nhỏ, hoặc đặt ngoài (trên mái).</p>
+  </div>
+  <div class="spec"><span class="k">Số máy phát bắt buộc</span><span class="v">2</span></div>
+  <div class="spec"><span class="k">Phòng máy phát</span><span class="v">≥ 7m² dài</span></div>
+
+  <h3>🔇 Tiếng ồn</h3>
+  <div class="card">
+    <div class="spec"><span class="k">Phòng khách sạn</span><span class="v">&lt;30 dB (mục tiêu 25 dB)</span></div>
+    <div class="spec"><span class="k">Công cộng & bếp</span><span class="v">&lt;70 dB (khuyến nghị &lt;50)</span></div>
+    <div class="spec"><span class="k">Cách âm</span><span class="v">Bắt buộc cho bếp + máy móc</span></div>
+  </div>
+
+  <h3>🖥️ Phòng server</h3>
+  <div class="card card-info">
+    <p><strong>Đề xuất: chuyển lên tầng 2</strong> (hiện &lt;5m² ở hầm quá bé). Hệ thống chữa cháy riêng bằng <em>FM200</em> — tuyệt đối không nước/bọt.</p>
+  </div>
+
+  <h3>📡 RCU — Data-driven</h3>
+  <div class="card card-ok">
+    <ul>
+      <li>Check-in tại lễ tân → tự bật điều hòa, ánh sáng, hiển thị lời chào cá nhân hóa</li>
+      <li><strong>POS không dây</strong>: bếp ↔ kế toán ↔ bộ phận real-time</li>
+      <li>Dự đoán occupancy → planning nhân sự, mua hàng, bếp</li>
+      <li>Cá nhân hóa cực chi tiết: "phở ít bánh nhiều thịt, không hành, không bột ngọt"</li>
+    </ul>
+  </div>
+</section>
+
+<!-- 5. KIEN TRUC -->
+<section id="kien truc">
+  <h2>Thiết kế kiến trúc</h2>
+
+  <div class="card card-accent">
+    <h3>🪟 Yêu cầu "Seamless Design"</h3>
+    <ul>
+      <li><strong>Sàn phẳng</strong>, không bậc, không góc sắc (an toàn người già + trẻ nhỏ)</li>
+      <li>Đồ vải bọc tràn viền, không bệ gỗ sắc cạnh</li>
+      <li><strong>Hạn chế khe LED</strong> (bụi mịn → nấm mốc khi tắt/mở điều hòa)</li>
+      <li>Nguồn sáng tủ: chiếu <em>ngoài → trong</em>, không ngược sáng</li>
+      <li>Trần "sạch": giấu miệng gió, sprinkler, đầu báo cháy</li>
+      <li><strong>Phòng tắm lấy sáng tự nhiên</strong> (vách kính thông minh)</li>
+    </ul>
+  </div>
+
+  <h3>Phòng ngủ</h3>
+  <div class="card">
+    <div class="spec"><span class="k">Tổng số phòng</span><span class="v">28</span></div>
+    <div class="spec"><span class="k">Diện tích</span><span class="v">36-42 m² (vượt chuẩn 5★)</span></div>
+    <div class="spec"><span class="k">Thách thức</span><span class="v">Biên dạng phức tạp, không vuông</span></div>
+    <div class="spec"><span class="k">Mặt ngoài</span><span class="v">Kính 2 lớp chống nóng</span></div>
+    <div class="spec"><span class="k">Sáng tự nhiên</span><span class="v">Đông-Tây (sáng/chiều)</span></div>
+    <div class="spec"><span class="k">Service pantry / tầng</span><span class="v">6 m² (đồ vải, xe đẩy, amenities)</span></div>
+  </div>
+
+  <h3>Sảnh chính</h3>
+  <div class="card card-info">
+    <p><strong>Thang máy quan sát</strong> lồng kính 2-3 mặt + <em>thác nước trang trí</em> phía sau lưng thang.</p>
+  </div>
+
+  <figure>
+    <img src="https://images.pexels.com/photos/164595/pexels-photo-164595.jpeg?auto=compress&cs=tinysrgb&w=800" alt="Luxury interior" loading="lazy">
+    <figcaption>Concept không gian — hướng đến tiêu chuẩn Aman / luxury resort</figcaption>
+  </figure>
+</section>
+
+<!-- 6. AM THUC -->
+<section id="amthuc">
+  <h2>Ẩm thực & Nhà hàng</h2>
+
+  <div class="card card-accent">
+    <h3>🇻🇳 Tôn vinh tinh hoa ẩm thực Việt</h3>
+    <p>Xuất phát từ <strong>niềm tự hào dân tộc</strong> — quảng bá ẩm thực Việt ra thế giới tương tự Trung Hoa, Pháp, Ý.</p>
+    <blockquote>
+      "Michelin đẩy mạnh 1 nguyên liệu (Kobe). Món Việt như chả giò là tổ hợp cân bằng: thịt heo + tôm + nấm + giá + hành."
+      <footer>— KTS Lân, phân tích triết lý ẩm thực</footer>
+    </blockquote>
+    <p><strong>Điểm nhấn:</strong> nghệ thuật sử dụng gia vị + thảo mộc đặc trưng Việt Nam.</p>
+  </div>
+
+  <figure>
+    <img src="https://images.pexels.com/photos/1029604/pexels-photo-1029604.jpeg?auto=compress&cs=tinysrgb&w=800" alt="Fresh herbs and spices" loading="lazy">
+    <figcaption>Herbs & spices — chìa khóa của ẩm thực Việt</figcaption>
+  </figure>
+
+  <h3>Quy mô & vận hành</h3>
+  <div class="card">
+    <div class="spec"><span class="k">Sức chứa</span><span class="v">66-68 chỗ</span></div>
+    <div class="spec"><span class="k">Bếp</span><span class="v">Á-Âu liên thông (lầu 3)</span></div>
+    <div class="spec"><span class="k">Giao thông</span><span class="v">Thang máy + luồng riêng</span></div>
+    <div class="spec"><span class="k">Năng lượng</span><span class="v">100% bếp điện</span></div>
+    <div class="spec"><span class="k">Nước</span><span class="v">14 chỉ tiêu + UV + làm mềm</span></div>
+  </div>
+</section>
+
+<!-- 7. QUY TRINH -->
+<section id="quytrinh">
+  <h2>Quy trình phối hợp</h2>
+
+  <div class="timeline">
+    <div class="tl-item">
+      <h4>GĐ 1 — Minimum Standards</h4>
+      <p>PCCC + M&E + Thang máy nộp "tiêu chuẩn cứng" (default) cho KTS Thực: kích thước buồng đệm, hành lang, cửa thoát hiểm, vị trí phòng máy phát, service pantry 6m².</p>
+    </div>
+    <div class="tl-item">
+      <h4>GĐ 2 — Freeze kiến trúc</h4>
+      <p>T5/T6 tuần sau: KTS Thực gửi layout mới. 1 ngày cross-check. <strong>Chốt FREEZE chậm nhất 19/6</strong>.</p>
+    </div>
+    <div class="tl-item">
+      <h4>GĐ 3 — Concept & Detail</h4>
+      <p>Sau khi kiến trúc đóng băng → M&E + nội thất triển khai chi tiết (đường ống âm trần/âm sàn, chi tiết từng phòng).</p>
+    </div>
+  </div>
+
+  <h3>📘 Playbook — Kim chỉ nam</h3>
+  <div class="card card-accent">
+    <p>Tài liệu định hướng của anh Hùng: vật liệu, mùi hương, ngôn ngữ kiến trúc.</p>
+    <p><strong>Toàn đội đọc tối thiểu 1 lần/tuần</strong> — mục đích: thấm nhuần triết lý, cross-check nhịp nhàng, tránh thiết kế lệch pha.</p>
+  </div>
+</section>
+
+<!-- 8. ACTIONS -->
+<section id="actions">
+  <h2>9 hạng mục hành động</h2>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr><th>#</th><th>Hạng mục</th><th>Phụ trách</th><th>Deadline</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>1</td><td>Lập tờ trình hợp nhất 2 khối nhà, làm việc phường</td><td>Speaker 5 + nhóm Hùng</td><td>Song song</td></tr>
+        <tr><td>2</td><td>Điều chỉnh layout (hầm → T3) tích hợp yêu cầu các bộ môn</td><td>KTS Thực / Lân / Linh</td><td><strong style="color:var(--warn)">19/6</strong></td></tr>
+        <tr><td>3</td><td>Default M&E (phòng bơm, máy phát, hộp gen, trục)</td><td>M&E (Sp 9/13)</td><td>Trước layout mới</td></tr>
+        <tr><td>4</td><td>Default PCCC (hành lang, buồng đệm)</td><td>PCCC (Sp 4 / Tùng)</td><td>Trước layout mới</td></tr>
+        <tr><td>5</td><td>Xác nhận thang máy PCCC có bắt buộc xuống hầm</td><td>Speaker 13</td><td>Tuần tới</td></tr>
+        <tr><td>6</td><td>Nghiên cứu chồng 2 máy phát nhỏ / đặt ngoài</td><td>Sp 1 / Hải</td><td>Xác định KT + thông gió</td></tr>
+        <tr><td>7</td><td>Vị trí phòng server + hệ thống FM200</td><td>Sp 1 / M&E</td><td>Đề xuất T2</td></tr>
+        <tr><td>8</td><td>Đọc lại Playbook 1 lần/tuần</td><td>Toàn đội thiết kế</td><td>Liên tục</td></tr>
+        <tr><td>9</td><td>Họp đóng băng mặt bằng</td><td>Sp 4 / Chủ đầu tư</td><td><strong style="color:var(--warn)">20-21/6</strong></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="card card-warn">
+    <h3 style="color:var(--warn)">⚠️ Bổ sung 2 action items bị thiếu trong bảng gốc</h3>
+    <ul>
+      <li><strong>Loại bỏ kho gas trung tâm</strong> → M&E tính lại công suất điện nhà hàng</li>
+      <li><strong>Bổ sung service pantry 6m²</strong> tại mỗi tầng phòng</li>
+    </ul>
+  </div>
+</section>
+
+<!-- 9. FAQ -->
+<section id="faq">
+  <h2>FAQ — Câu hỏi nghiên cứu</h2>
+
+  <div class="card card-info">
+    <h3>❓ Lợi ích hoán đổi đường dân sinh?</h3>
+    <p>Mặt tiền bề thế hơn; người dân có đường đi thẳng, thuận tiện; giá trị BĐS lân cận tăng; phù hợp chỉnh trang đô thị.</p>
+  </div>
+
+  <div class="card card-info">
+    <h3>❓ Kho gas độc lập đạt chuẩn PCCC 150 phút?</h3>
+    <p>Tường gạch đặc, trần + sàn REI 150, bán kính 2m không lỗ mở dưới sàn, cửa chống cháy mở ra ngoài. <strong>→ Quyết định: bỏ hẳn gas, dùng 100% bếp điện.</strong></p>
+  </div>
+
+  <div class="card card-info">
+    <h3>❓ 4 phong cách thiết kế nội thất?</h3>
+    <p>Tokyo Vibe · Kyoto Vibe · New York Vibe · Metropole Vibe (xem gallery ở đầu trang).</p>
+  </div>
+
+  <div class="card card-info">
+    <h3>❓ Thay đổi cụ thể thang máy PCCC?</h3>
+    <p>Buồng thang sâu 2.1m (dời đối trọng + nhích trục 20cm), sảnh đệm 2.3m xoay băng ca, không mở cửa công năng khác vào sảnh.</p>
+  </div>
+
+  <div class="card card-info">
+    <h3>❓ Tại sao bỏ hệ thống gas?</h3>
+    <p>Kho gas quá phức tạp + rủi ro. Giải pháp: 100% bếp điện, chuẩn du thuyền Star Cruise quốc tế.</p>
+  </div>
+
+  <div class="card card-info">
+    <h3>❓ Độ ồn trong phòng?</h3>
+    <p>&lt;30 dB (mục tiêu 25 dB). Công cộng & bếp &lt;70 dB, khuyến nghị &lt;50 dB để không lọt âm sang khu khách.</p>
+  </div>
+
+  <div class="card card-info">
+    <h3>❓ RCU tối ưu vận hành thế nào?</h3>
+    <p>Check-in tự động bật điều hòa + đèn + lời chào; POS không dây real-time; dự đoán occupancy cho HR, mua hàng, bếp.</p>
+  </div>
+
+  <div class="card card-info">
+    <h3>❓ Giải pháp sáng tự nhiên cho phòng tắm?</h3>
+    <p>Vách kính thông minh lấy nắng → diệt khuẩn UV tự nhiên + mùi hương organic + tăng giá trị căn phòng.</p>
+  </div>
+
+  <div class="card card-info">
+    <h3>❓ Kịch bản đập bỏ layout hầm → T3?</h3>
+    <p>Nếu ý tưởng hợp nhất khả thi: đập bỏ + làm lại toàn bộ từ tầng hầm → T3, vì khu vực này có liên kết trực tiếp. Tầng trên giữ nguyên.</p>
+  </div>
+</section>
+
+</div>
+
+<footer class="page-footer">
+  <p>Biên bản họp Lelai · 7/6/2026</p>
+  <p>File gốc: <code>D:\SecondBrain\2_projects\joy-hospitality\lelai\26 lelai bien bang.txt</code></p>
+  <p>Wiki: <a href="file:///D:/SecondBrain/1_wiki/concepts/lelai-bienbang-hop-2026-06-07.md">concept node</a></p>
+  <p style="margin-top:12px;opacity:.6">Dành cho mobile · Tối ưu cho Joy Hospitality team</p>
+</footer>
+
+</body>
+</html>
